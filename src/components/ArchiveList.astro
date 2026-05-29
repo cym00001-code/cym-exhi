@@ -1,0 +1,76 @@
+---
+import type { ExhibitionEntry, HallEntry } from '../utils/content';
+
+interface Props {
+  exhibitions: ExhibitionEntry[];
+  halls: Map<string, HallEntry>;
+}
+
+const { exhibitions, halls } = Astro.props;
+---
+
+<div class="archive-list">
+  {
+    exhibitions.map((exhibition) => {
+      const hall = halls.get(exhibition.data.hallSlug);
+      return (
+        <a class="archive-row" href={`/exhibitions/${exhibition.data.slug}`}>
+          <span class="date">{exhibition.data.dateLabel ?? exhibition.data.date}</span>
+          <span class="title">{exhibition.data.title}</span>
+          <span class="hall">{hall?.data.name ?? exhibition.data.hallSlug}</span>
+          <span class="location">{exhibition.data.location}</span>
+          <span class="status">{exhibition.data.status}</span>
+        </a>
+      );
+    })
+  }
+</div>
+
+<style>
+  .archive-list {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .archive-row {
+    display: grid;
+    grid-template-columns:
+      minmax(7rem, 0.65fr) minmax(12rem, 1.35fr) minmax(8rem, 0.8fr) minmax(10rem, 1fr)
+      minmax(5rem, auto);
+    gap: var(--space-3);
+    padding: 1.05rem 0;
+    border-bottom: 1px solid var(--color-line);
+    transition:
+      color var(--motion-duration) var(--motion-ease),
+      border-color var(--motion-duration) var(--motion-ease);
+  }
+
+  .archive-row:hover {
+    border-color: var(--color-line-strong);
+    color: var(--color-blue-gray);
+  }
+
+  .date,
+  .hall,
+  .location,
+  .status {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+  }
+
+  .title {
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: var(--step-1);
+    line-height: 1.25;
+  }
+
+  @media (max-width: 780px) {
+    .archive-row {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
+      padding: var(--space-3) 0;
+    }
+  }
+</style>

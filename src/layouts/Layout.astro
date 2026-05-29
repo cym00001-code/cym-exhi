@@ -1,0 +1,42 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const siteTitle = 'YIMING PHOTO ARCHIVE';
+const {
+  title = siteTitle,
+  description = '一鸣私人摄影馆：一个安静、克制、长期维护的私人摄影网页展览馆。',
+} = Astro.props;
+
+const pageTitle = title === siteTitle ? siteTitle : `${title} | ${siteTitle}`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <title>{pageTitle}</title>
+    <ClientRouter />
+  </head>
+  <body>
+    <div class="site-shell">
+      <Header />
+      <main class="page-main">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+  </body>
+</html>

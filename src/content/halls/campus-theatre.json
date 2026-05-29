@@ -1,0 +1,10 @@
+{
+  "slug": "campus-theatre",
+  "name": "校园 / 剧场展厅",
+  "englishName": "Campus & Theatre",
+  "description": "关于校园、舞台、排练、座椅、幕布与人群散去之后留下的光。",
+  "mood": ["幕布", "排练", "走廊", "散场"],
+  "status": "active",
+  "order": 3,
+  "tone": "brown-gray"
+}

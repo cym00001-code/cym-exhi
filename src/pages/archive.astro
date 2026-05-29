@@ -1,0 +1,31 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SectionTitle from '../components/SectionTitle.astro';
+import ArchiveList from '../components/ArchiveList.astro';
+import MotionReveal from '../components/MotionReveal.astro';
+import { getHallMap, getPublicExhibitions } from '../utils/content';
+
+const exhibitions = await getPublicExhibitions();
+const hallMap = await getHallMap();
+---
+
+<Layout title="Archive" description="按时间归档的一鸣私人摄影馆展览。">
+  <section class="page-section archive-page">
+    <MotionReveal>
+      <SectionTitle
+        label="Archive"
+        title="展览归档"
+        description="按时间保留所有已发布展览。这里保持简洁，不在 Phase 1 做复杂筛选。"
+      />
+    </MotionReveal>
+    <MotionReveal>
+      <ArchiveList exhibitions={exhibitions} halls={hallMap} />
+    </MotionReveal>
+  </section>
+</Layout>
+
+<style>
+  .archive-page {
+    padding-top: var(--space-8);
+  }
+</style>

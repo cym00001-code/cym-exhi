@@ -1,0 +1,47 @@
+---
+interface Props {
+  label?: string;
+  title: string;
+  description?: string;
+}
+
+const { label, title, description } = Astro.props;
+---
+
+<div class="section-title">
+  {label && <p>{label}</p>}
+  <h2>{title}</h2>
+  {description && <div class="section-copy">{description}</div>}
+</div>
+
+<style>
+  .section-title {
+    max-width: 52rem;
+    margin-bottom: var(--space-5);
+  }
+
+  p {
+    margin: 0 0 var(--space-2);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    max-width: 48rem;
+    margin: 0;
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: var(--step-3);
+    font-weight: 400;
+    line-height: 1.08;
+  }
+
+  .section-copy {
+    max-width: 43rem;
+    margin-top: var(--space-3);
+    color: var(--color-muted);
+  }
+</style>

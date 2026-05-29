@@ -1,0 +1,10 @@
+{
+  "slug": "experiments",
+  "name": "黑白 / 实验展厅",
+  "englishName": "Experiments",
+  "description": "给黑白、运动模糊、颗粒、局部和更锐利的观看方式保留的实验空间。",
+  "mood": ["黑白", "颗粒", "模糊", "切片"],
+  "status": "active",
+  "order": 6,
+  "tone": "monochrome"
+}

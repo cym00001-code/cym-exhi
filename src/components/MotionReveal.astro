@@ -1,0 +1,42 @@
+---
+const { as = 'div', class: className = '' }: { as?: keyof HTMLElementTagNameMap; class?: string } =
+  Astro.props;
+const Tag = as;
+---
+
+<Tag class:list={['reveal', className]} data-reveal>
+  <slot />
+</Tag>
+
+<script>
+  const setupReveal = () => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const items = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+
+    if (prefersReduced || !('IntersectionObserver' in window)) {
+      items.forEach((item) => item.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: '0px 0px -10% 0px', threshold: 0.12 },
+    );
+
+    items.forEach((item) => {
+      if (!item.classList.contains('is-visible')) {
+        observer.observe(item);
+      }
+    });
+  };
+
+  setupReveal();
+  document.addEventListener('astro:page-load', setupReveal);
+</script>

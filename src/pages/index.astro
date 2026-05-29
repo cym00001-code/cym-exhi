@@ -1,0 +1,129 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import SectionTitle from '../components/SectionTitle.astro';
+import HallCard from '../components/HallCard.astro';
+import ExhibitionCard from '../components/ExhibitionCard.astro';
+import MotionReveal from '../components/MotionReveal.astro';
+import { getHallMap, getHalls, getPublicExhibitions, resolveImage } from '../utils/content';
+
+const halls = await getHalls();
+const exhibitions = await getPublicExhibitions();
+const hallMap = await getHallMap();
+const featured = exhibitions.find((exhibition) => exhibition.data.featured) ?? exhibitions[0];
+
+const exhibitionsByHall = new Map(
+  halls.map((hall) => [
+    hall.data.slug,
+    exhibitions.filter((exhibition) => exhibition.data.hallSlug === hall.data.slug),
+  ]),
+);
+
+const featuredHall = featured ? hallMap.get(featured.data.hallSlug) : undefined;
+---
+
+<Layout>
+  <Hero
+    featured={featured
+      ? {
+          title: featured.data.title,
+          subtitle: featured.data.subtitle,
+          href: `/exhibitions/${featured.data.slug}`,
+          hallName: featuredHall?.data.name ?? featured.data.hallSlug,
+          location: featured.data.location,
+          image: resolveImage(featured.data.cover),
+          alt: featured.data.photos[0]?.alt ?? featured.data.title,
+        }
+      : undefined}
+  />
+
+  <section class="page-section surface-line">
+    <MotionReveal>
+      <SectionTitle
+        label="Halls"
+        title="展厅入口"
+        description="不同主题像不同展厅。每个展厅都保留自己的气质，但公开界面始终保持安静和克制。"
+      />
+    </MotionReveal>
+    <div class="hall-list">
+      {
+        halls.map((hall) => (
+          <MotionReveal>
+            <HallCard hall={hall} exhibitions={exhibitionsByHall.get(hall.data.slug) ?? []} />
+          </MotionReveal>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="page-section">
+    <MotionReveal>
+      <SectionTitle
+        label="Current"
+        title="当前展览"
+        description="展览不是相册列表，而是一组有顺序、有文字、有停顿的观看路径。"
+      />
+    </MotionReveal>
+    {
+      featured && (
+        <MotionReveal>
+          <ExhibitionCard
+            exhibition={featured}
+            hall={featuredHall}
+            image={resolveImage(featured.data.cover)}
+          />
+        </MotionReveal>
+      )
+    }
+  </section>
+
+  <section class="archive-entry">
+    <div>
+      <p>Archive</p>
+      <h2>按时间回到所有展览</h2>
+    </div>
+    <a class="quiet-link" href="/archive">Open archive</a>
+  </section>
+</Layout>
+
+<style>
+  .hall-list {
+    display: grid;
+  }
+
+  .archive-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+    width: min(calc(100% - 2rem), var(--width-page));
+    margin: 0 auto var(--space-7);
+    padding: var(--space-5) 0;
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .archive-entry p {
+    margin: 0 0 0.4rem;
+    color: var(--color-blue-gray);
+    font-family: var(--font-mono);
+    font-size: 0.73rem;
+    text-transform: uppercase;
+  }
+
+  .archive-entry h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  @media (max-width: 680px) {
+    .archive-entry {
+      align-items: flex-start;
+      flex-direction: column;
+      width: min(calc(100% - 1.25rem), var(--width-page));
+    }
+  }
+</style>

@@ -1,0 +1,139 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SectionTitle from '../../components/SectionTitle.astro';
+import ExhibitionCard from '../../components/ExhibitionCard.astro';
+import MotionReveal from '../../components/MotionReveal.astro';
+import { getExhibitionsForHall, getHalls, resolveImage, type HallEntry } from '../../utils/content';
+
+export async function getStaticPaths() {
+  const halls = await getHalls();
+  return halls.map((hall) => ({
+    params: { slug: hall.data.slug },
+    props: { hall },
+  }));
+}
+
+interface Props {
+  hall: HallEntry;
+}
+
+const { hall } = Astro.props;
+const exhibitions = await getExhibitionsForHall(hall.data.slug);
+---
+
+<Layout title={hall.data.name} description={hall.data.description}>
+  <section class:list={['hall-hero', `tone-${hall.data.tone}`]}>
+    <MotionReveal>
+      <div class="meta-line">
+        <span>{hall.data.englishName}</span>
+        <span>{hall.data.status}</span>
+      </div>
+      <h1>{hall.data.name}</h1>
+      <p>{hall.data.description}</p>
+      <div class="moods" aria-label="展厅气质关键词">
+        {hall.data.mood.map((item) => <span>{item}</span>)}
+      </div>
+    </MotionReveal>
+  </section>
+
+  <section class="page-section">
+    <MotionReveal>
+      <SectionTitle label="Exhibitions" title="展览列表" />
+    </MotionReveal>
+    {
+      exhibitions.length > 0 ? (
+        <div class="exhibition-list">
+          {exhibitions.map((exhibition) => (
+            <MotionReveal>
+              <ExhibitionCard
+                exhibition={exhibition}
+                hall={hall}
+                image={resolveImage(exhibition.data.cover)}
+              />
+            </MotionReveal>
+          ))}
+        </div>
+      ) : (
+        <MotionReveal>
+          <p class="empty-state">此展厅仍在布置中。</p>
+        </MotionReveal>
+      )
+    }
+  </section>
+</Layout>
+
+<style>
+  .hall-hero {
+    width: min(calc(100% - 2rem), var(--width-page));
+    margin-inline: auto;
+    padding: var(--space-8) 0 var(--space-6);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .tone-warm {
+    --tone: var(--color-brown-gray);
+  }
+
+  .tone-blue-gray {
+    --tone: var(--color-blue-gray);
+  }
+
+  .tone-brown-gray {
+    --tone: var(--color-brown-gray);
+  }
+
+  .tone-daily {
+    --tone: var(--color-daily);
+  }
+
+  .tone-monochrome {
+    --tone: var(--color-ink-soft);
+  }
+
+  h1 {
+    max-width: 12ch;
+    margin: var(--space-3) 0 0;
+    font-family: var(--font-serif);
+    font-size: var(--step-4);
+    font-weight: 400;
+    line-height: 0.96;
+  }
+
+  .hall-hero p {
+    max-width: 46rem;
+    margin: var(--space-5) 0 0;
+    color: var(--color-muted);
+    font-size: var(--step-1);
+    line-height: 1.9;
+  }
+
+  .moods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    margin-top: var(--space-5);
+  }
+
+  .moods span {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--tone) 46%, transparent);
+    color: var(--tone);
+  }
+
+  .empty-state {
+    max-width: 36rem;
+    margin: 0;
+    padding: var(--space-5) 0;
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+    color: var(--color-muted);
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+  }
+
+  @media (max-width: 680px) {
+    .hall-hero {
+      width: min(calc(100% - 1.25rem), var(--width-page));
+    }
+  }
+</style>

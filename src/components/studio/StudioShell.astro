@@ -1,0 +1,75 @@
+---
+interface Props {
+  title?: string;
+}
+
+const { title = 'Private Curator Workspace' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>{title} | YIMING PHOTO ARCHIVE</title>
+  </head>
+  <body>
+    <main class="studio-shell">
+      <section class="studio-panel">
+        <p class="label">Private Curator Workspace</p>
+        <slot />
+      </section>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --studio-bg: #efebe3;
+    --studio-panel: #fbfaf6;
+    --studio-ink: #171410;
+    --studio-muted: #6d665d;
+    --studio-line: rgba(23, 20, 16, 0.16);
+    --studio-blue: #637582;
+    --studio-font:
+      'Inter', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
+    --studio-mono: 'IBM Plex Mono', Consolas, monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background: var(--studio-bg);
+    color: var(--studio-ink);
+    font-family: var(--studio-font);
+  }
+
+  .studio-shell {
+    width: min(calc(100% - 2rem), 1040px);
+    min-height: 100vh;
+    margin-inline: auto;
+    padding: 8vh 0;
+    display: grid;
+    place-items: center;
+  }
+
+  .studio-panel {
+    width: 100%;
+    padding: clamp(1.5rem, 5vw, 4rem);
+    border: 1px solid var(--studio-line);
+    background: var(--studio-panel);
+  }
+
+  .label {
+    margin: 0 0 1.5rem;
+    color: var(--studio-blue);
+    font-family: var(--studio-mono);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+  }
+</style>

@@ -1,0 +1,63 @@
+{
+  "slug": "short-leave",
+  "title": "短暂离开日常",
+  "subtitle": "一次从日常中短暂出走的影像记录",
+  "hallSlug": "travel",
+  "date": "2026-05-30",
+  "dateLabel": "2026 / 路上",
+  "location": "深圳 / 广州 / 路上",
+  "cover": "/src/assets/exhibitions/short-leave/rain-walk.webp",
+  "intro": "这些照片暂时从日常里退后一步：车窗外的路、夜里发亮的地面、安静的走廊，以及没有被相册吞掉的几次停顿。",
+  "status": "published",
+  "featured": true,
+  "photos": [
+    {
+      "src": "/src/assets/exhibitions/short-leave/rain-walk.webp",
+      "alt": "雨后城市路面映出暖色街灯",
+      "caption": "雨后，城市把路灯收进地面。",
+      "location": "深圳",
+      "date": "2026-05-30",
+      "orientation": "landscape"
+    },
+    {
+      "src": "/src/assets/exhibitions/short-leave/window-road.webp",
+      "alt": "车窗外经过远山和路面",
+      "caption": "车窗把远处的山和近处的路放在同一层玻璃上。",
+      "location": "路上",
+      "date": "2026-05-30",
+      "orientation": "landscape"
+    },
+    {
+      "src": "/src/assets/exhibitions/short-leave/blue-corridor.webp",
+      "alt": "蓝灰色走廊里一小块光落在地面",
+      "caption": "走廊深处没有声音，只有一小块光还在。",
+      "location": "广州",
+      "date": "2026-05-30",
+      "orientation": "portrait"
+    },
+    {
+      "src": "/src/assets/exhibitions/short-leave/river-crossing.webp",
+      "alt": "渡船栏杆外的水面和远处城市",
+      "caption": "水面让城市退到更远的地方。",
+      "location": "广州",
+      "date": "2026-05-30",
+      "orientation": "landscape"
+    },
+    {
+      "src": "/src/assets/exhibitions/short-leave/travel-table.webp",
+      "alt": "旅途桌面上的杯子、票据和窗边光线",
+      "caption": "临时桌面，也能成为一小段旅程的证据。",
+      "location": "路上",
+      "date": "2026-05-30",
+      "orientation": "square"
+    },
+    {
+      "src": "/src/assets/exhibitions/short-leave/passing-architecture.webp",
+      "alt": "黑白模糊的建筑从视线旁掠过",
+      "caption": "有些建筑不是被看见的，是从视线旁掠过去的。",
+      "location": "路上",
+      "date": "2026-05-30",
+      "orientation": "landscape"
+    }
+  ]
+}

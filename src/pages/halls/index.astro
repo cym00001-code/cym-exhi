@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SectionTitle from '../../components/SectionTitle.astro';
+import HallCard from '../../components/HallCard.astro';
+import MotionReveal from '../../components/MotionReveal.astro';
+import { getHalls, getPublicExhibitions } from '../../utils/content';
+
+const halls = await getHalls();
+const exhibitions = await getPublicExhibitions();
+---
+
+<Layout title="展厅总览" description="一鸣私人摄影馆的展厅总览。">
+  <section class="page-section halls-overview">
+    <MotionReveal>
+      <SectionTitle
+        label="Public Exhibition"
+        title="展厅总览"
+        description="每个展厅负责一种观看方式。它们不是分类抽屉，而是给照片留下不同温度的房间。"
+      />
+    </MotionReveal>
+    <div class="halls">
+      {
+        halls.map((hall) => (
+          <MotionReveal>
+            <HallCard
+              hall={hall}
+              exhibitions={exhibitions.filter(
+                (exhibition) => exhibition.data.hallSlug === hall.data.slug,
+              )}
+            />
+          </MotionReveal>
+        ))
+      }
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .halls-overview {
+    padding-top: var(--space-8);
+  }
+</style>

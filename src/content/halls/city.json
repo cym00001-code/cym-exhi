@@ -1,0 +1,10 @@
+{
+  "slug": "city",
+  "name": "城市展厅",
+  "englishName": "City Hall",
+  "description": "存放街道、橱窗、地铁、雨后路面和城市光线里短暂出现的秩序。",
+  "mood": ["街灯", "玻璃", "雨后的路面", "夜色里的反光"],
+  "status": "active",
+  "order": 1,
+  "tone": "blue-gray"
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "still-life",
+  "name": "静物 / 生活展厅",
+  "englishName": "Still Life",
+  "description": "日常器物、桌面、窗边和生活里被光线轻轻放慢的片刻。",
+  "mood": ["桌面", "窗光", "器物", "慢下来的日常"],
+  "status": "active",
+  "order": 4,
+  "tone": "brown-gray"
+}

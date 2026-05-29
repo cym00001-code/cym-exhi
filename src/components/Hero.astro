@@ -1,0 +1,199 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Featured {
+  title: string;
+  subtitle: string;
+  href: string;
+  hallName: string;
+  location: string;
+  image: ImageMetadata;
+  alt: string;
+}
+
+interface Props {
+  featured?: Featured;
+}
+
+const { featured } = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero-copy">
+    <p class="museum-label">Private Photography Archive</p>
+    <h1>YIMING PHOTO ARCHIVE</h1>
+    <p class="subtitle">一鸣私人摄影馆</p>
+    <p class="intro">
+      这里存放一些经过的地方、看见的光、城市里的片刻，以及某些不想被相册吞掉的瞬间。
+    </p>
+    <div class="hero-actions">
+      <a class="quiet-link" href="/halls">Enter halls</a>
+      <a class="quiet-link secondary" href="/archive">Archive index</a>
+    </div>
+  </div>
+
+  {
+    featured && (
+      <a class="featured-entry" href={featured.href} aria-label={`进入当前展览 ${featured.title}`}>
+        <div class="featured-frame">
+          <Image
+            src={featured.image}
+            alt={featured.alt}
+            widths={[640, 960, 1280, 1600]}
+            sizes="(max-width: 860px) 100vw, 48vw"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+        <div class="featured-text">
+          <p>Current Exhibition</p>
+          <h2>{featured.title}</h2>
+          <span>{featured.subtitle}</span>
+          <small>
+            {featured.hallName} / {featured.location}
+          </small>
+        </div>
+      </a>
+    )
+  }
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(320px, 0.78fr);
+    gap: clamp(2rem, 6vw, 6.5rem);
+    width: min(calc(100% - 2rem), var(--width-wide));
+    min-height: calc(100svh - 5.5rem);
+    margin-inline: auto;
+    padding: var(--space-6) 0 var(--space-7);
+    align-items: center;
+  }
+
+  .hero-copy {
+    max-width: 52rem;
+  }
+
+  .museum-label,
+  .featured-text p {
+    margin: 0 0 var(--space-3);
+    color: var(--color-blue-gray);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    max-width: 11ch;
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: var(--step-4);
+    font-weight: 400;
+    line-height: 0.94;
+  }
+
+  .subtitle {
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-soft);
+    font-size: var(--step-1);
+  }
+
+  .intro {
+    max-width: 42rem;
+    margin: var(--space-5) 0 0;
+    color: var(--color-muted);
+    font-size: var(--step-1);
+    line-height: 1.9;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.1rem 2rem;
+    margin-top: var(--space-5);
+  }
+
+  .secondary {
+    color: var(--color-blue-gray);
+  }
+
+  .featured-entry {
+    display: grid;
+    gap: var(--space-3);
+    align-self: stretch;
+    color: inherit;
+  }
+
+  .featured-frame {
+    min-height: 26rem;
+    overflow: hidden;
+    border: 1px solid rgba(24, 21, 17, 0.18);
+    background: var(--color-stone-100);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .featured-frame :global(img) {
+    width: 100%;
+    height: 100%;
+    min-height: 26rem;
+    object-fit: cover;
+    filter: saturate(0.92) contrast(0.97);
+    transition:
+      filter var(--motion-duration) var(--motion-ease),
+      transform 900ms var(--motion-ease);
+  }
+
+  .featured-entry:hover .featured-frame :global(img) {
+    transform: scale(1.018);
+    filter: saturate(1) contrast(1);
+  }
+
+  .featured-text {
+    display: grid;
+    gap: 0.35rem;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .featured-text p {
+    margin-bottom: 0.2rem;
+  }
+
+  .featured-text h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    font-weight: 400;
+    line-height: 1.16;
+  }
+
+  .featured-text span,
+  .featured-text small {
+    color: var(--color-muted);
+  }
+
+  .featured-text small {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 860px) {
+    .hero {
+      grid-template-columns: 1fr;
+      width: min(calc(100% - 1.25rem), var(--width-wide));
+      min-height: auto;
+    }
+
+    h1 {
+      max-width: 12ch;
+    }
+
+    .featured-frame,
+    .featured-frame :global(img) {
+      min-height: 20rem;
+    }
+  }
+</style>

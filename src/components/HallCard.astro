@@ -1,0 +1,123 @@
+---
+import type { HallEntry, ExhibitionEntry } from '../utils/content';
+
+interface Props {
+  hall: HallEntry;
+  exhibitions?: ExhibitionEntry[];
+}
+
+const { hall, exhibitions = [] } = Astro.props;
+const count = exhibitions.length;
+---
+
+<a class:list={['hall-card', `tone-${hall.data.tone}`]} href={`/halls/${hall.data.slug}`}>
+  <div class="hall-index">{String(hall.data.order).padStart(2, '0')}</div>
+  <div class="hall-main">
+    <p>{hall.data.englishName}</p>
+    <h3>{hall.data.name}</h3>
+    <div class="mood">
+      {hall.data.mood.map((item) => <span>{item}</span>)}
+    </div>
+  </div>
+  <div class="hall-side">
+    <span>{count > 0 ? `${count} exhibition${count > 1 ? 's' : ''}` : '布置中'}</span>
+  </div>
+</a>
+
+<style>
+  .hall-card {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    border-top: 1px solid var(--color-line);
+    transition:
+      border-color var(--motion-duration) var(--motion-ease),
+      transform var(--motion-duration) var(--motion-ease);
+  }
+
+  .hall-card:last-child {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .hall-card:hover {
+    border-color: var(--color-line-strong);
+    transform: translateX(0.35rem);
+  }
+
+  .hall-index,
+  .hall-side {
+    color: var(--tone, var(--color-muted));
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .tone-warm {
+    --tone: var(--color-brown-gray);
+  }
+
+  .tone-blue-gray {
+    --tone: var(--color-blue-gray);
+  }
+
+  .tone-brown-gray {
+    --tone: var(--color-brown-gray);
+  }
+
+  .tone-daily {
+    --tone: var(--color-daily);
+  }
+
+  .tone-monochrome {
+    --tone: var(--color-ink-soft);
+  }
+
+  p {
+    margin: 0 0 0.3rem;
+    color: var(--tone);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    font-weight: 400;
+    line-height: 1.15;
+  }
+
+  .mood {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.85rem;
+    margin-top: var(--space-3);
+    color: var(--color-muted);
+    font-size: 0.9rem;
+  }
+
+  .mood span::before {
+    content: '/';
+    margin-right: 0.4rem;
+    color: var(--color-line-strong);
+  }
+
+  .hall-side {
+    align-self: center;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 640px) {
+    .hall-card {
+      grid-template-columns: 2.5rem minmax(0, 1fr);
+      gap: var(--space-3);
+    }
+
+    .hall-side {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+</style>

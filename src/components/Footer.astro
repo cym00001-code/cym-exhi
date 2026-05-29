@@ -1,0 +1,42 @@
+<footer class="site-footer">
+  <div>
+    <p>YIMING PHOTO ARCHIVE</p>
+    <small>Private photography exhibition archive. Built as a quiet public gallery.</small>
+  </div>
+  <a class="quiet-link" href="/archive">Archive</a>
+</footer>
+
+<style>
+  .site-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    width: min(calc(100% - 2rem), var(--width-wide));
+    margin-inline: auto;
+    padding: var(--space-6) 0 var(--space-4);
+    border-top: 1px solid var(--color-line);
+    color: var(--color-muted);
+  }
+
+  p {
+    margin: 0 0 0.35rem;
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+
+  small {
+    display: block;
+    max-width: 34rem;
+    font-size: 0.86rem;
+  }
+
+  @media (max-width: 640px) {
+    .site-footer {
+      align-items: flex-start;
+      flex-direction: column;
+      width: min(calc(100% - 1.25rem), var(--width-wide));
+    }
+  }
+</style>
