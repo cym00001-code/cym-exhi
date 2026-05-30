@@ -91,6 +91,7 @@ server {
 
     root /www/wwwroot/photo-exhibition-site/current;
     index index.html;
+    charset utf-8;
 
     location = /studio {
         return 404;
@@ -173,6 +174,7 @@ ln -sfn /www/wwwroot/photo-exhibition-site/releases/<previous> /www/wwwroot/phot
 - `pnpm` 不存在：先安装 pnpm。
 - Node 版本不满足 Astro：升级服务器 Node，或使用指定 Node 运行 PM2 和构建。
 - 保存成功但页面没变：检查 API publish 返回、`pnpm build` 日志和 `current` 软链。
+- 首页中文显示为问号：确认 Nginx 当前配置包含 `charset utf-8;`，并检查 `src/data/site.json` 是否被非 UTF-8 请求写坏。
 - `/curator-studio` 无法登录：检查 `.env` 中 `STUDIO_PASSWORD_HASH` 和 `STUDIO_SESSION_SECRET`。
 - `/studio` 公开可访问：检查 Nginx 404 规则。
 - 内存不足：停止无关旧服务，避免并发构建。
