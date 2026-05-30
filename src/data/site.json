@@ -11,8 +11,8 @@
   "home": {
     "intro": "这里存放一些经过的地方、看见的光、城市里的片刻，以及某些不想被相册吞掉的瞬间。",
     "supplement": "它不是普通相册，也不是商业作品集。这里的照片会被整理成展厅、展览、观看顺序和必要的文字。",
-    "primaryActionLabel": "Enter halls",
-    "secondaryActionLabel": "Archive index",
+    "primaryActionLabel": "进入展厅",
+    "secondaryActionLabel": "查看全部展览",
     "hallsSectionLabel": "Halls",
     "hallsSectionTitle": "展厅入口",
     "hallsSectionDescription": "不同主题像不同展厅。每个展厅都保留自己的气质，但公开界面始终保持安静和克制。",
@@ -22,7 +22,7 @@
     "featuredLabel": "Current Exhibition",
     "archiveLabel": "Archive",
     "archiveTitle": "按时间回到所有展览",
-    "archiveLinkLabel": "Open archive"
+    "archiveLinkLabel": "查看归档"
   },
   "about": {
     "seoTitle": "About | YIMING PHOTO ARCHIVE",
