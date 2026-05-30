@@ -6,5 +6,9 @@
   "mood": ["日常", "私人", "片段", "物件", "轻记录", "难分类"],
   "status": "active",
   "order": 5,
-  "tone": "daily"
+  "showOnHome": true,
+  "cover": "",
+  "tone": "daily",
+  "accent": "#87908a",
+  "layoutHint": "light-private-notes"
 }

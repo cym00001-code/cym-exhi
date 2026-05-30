@@ -5,12 +5,16 @@ import SectionTitle from '../components/SectionTitle.astro';
 import HallCard from '../components/HallCard.astro';
 import ExhibitionCard from '../components/ExhibitionCard.astro';
 import MotionReveal from '../components/MotionReveal.astro';
-import { getHallMap, getHalls, getPublicExhibitions, resolveImage } from '../utils/content';
+import navigation from '../data/navigation.json';
+import siteCopy from '../data/site.json';
+import { getHallMap, getHomeHalls, getPublicExhibitions, resolveImage } from '../utils/content';
 
-const halls = await getHalls();
+const halls = await getHomeHalls();
 const exhibitions = await getPublicExhibitions();
 const hallMap = await getHallMap();
-const featured = exhibitions.find((exhibition) => exhibition.data.featured) ?? exhibitions[0];
+const featured = navigation.home.showFeaturedExhibition
+  ? (exhibitions.find((exhibition) => exhibition.data.featured) ?? exhibitions[0])
+  : undefined;
 
 const exhibitionsByHall = new Map(
   halls.map((hall) => [
@@ -37,35 +41,37 @@ const featuredHall = featured ? hallMap.get(featured.data.hallSlug) : undefined;
       : undefined}
   />
 
-  <section class="page-section surface-line">
-    <MotionReveal>
-      <SectionTitle
-        label="Halls"
-        title="展厅入口"
-        description="不同主题像不同展厅。每个展厅都保留自己的气质，但公开界面始终保持安静和克制。"
-      />
-    </MotionReveal>
-    <div class="hall-list">
-      {
-        halls.map((hall) => (
-          <MotionReveal>
-            <HallCard hall={hall} exhibitions={exhibitionsByHall.get(hall.data.slug) ?? []} />
-          </MotionReveal>
-        ))
-      }
-    </div>
-  </section>
+  {
+    navigation.home.showHalls && (
+      <section class="page-section surface-line">
+        <MotionReveal>
+          <SectionTitle
+            label={siteCopy.home.hallsSectionLabel}
+            title={siteCopy.home.hallsSectionTitle}
+            description={siteCopy.home.hallsSectionDescription}
+          />
+        </MotionReveal>
+        <div class="hall-list">
+          {halls.map((hall) => (
+            <MotionReveal>
+              <HallCard hall={hall} exhibitions={exhibitionsByHall.get(hall.data.slug) ?? []} />
+            </MotionReveal>
+          ))}
+        </div>
+      </section>
+    )
+  }
 
-  <section class="page-section">
-    <MotionReveal>
-      <SectionTitle
-        label="Current"
-        title="当前展览"
-        description="展览不是相册列表，而是一组有顺序、有文字、有停顿的观看路径。"
-      />
-    </MotionReveal>
-    {
-      featured && (
+  {
+    featured && (
+      <section class="page-section">
+        <MotionReveal>
+          <SectionTitle
+            label={siteCopy.home.currentSectionLabel}
+            title={siteCopy.home.currentSectionTitle}
+            description={siteCopy.home.currentSectionDescription}
+          />
+        </MotionReveal>
         <MotionReveal>
           <ExhibitionCard
             exhibition={featured}
@@ -73,17 +79,23 @@ const featuredHall = featured ? hallMap.get(featured.data.hallSlug) : undefined;
             image={resolveImage(featured.data.cover)}
           />
         </MotionReveal>
-      )
-    }
-  </section>
+      </section>
+    )
+  }
 
-  <section class="archive-entry">
-    <div>
-      <p>Archive</p>
-      <h2>按时间回到所有展览</h2>
-    </div>
-    <a class="quiet-link" href="/archive">Open archive</a>
-  </section>
+  {
+    navigation.home.showArchiveEntry && (
+      <section class="archive-entry">
+        <div>
+          <p>{siteCopy.home.archiveLabel}</p>
+          <h2>{siteCopy.home.archiveTitle}</h2>
+        </div>
+        <a class="quiet-link" href="/archive">
+          {siteCopy.home.archiveLinkLabel}
+        </a>
+      </section>
+    )
+  }
 </Layout>
 
 <style>

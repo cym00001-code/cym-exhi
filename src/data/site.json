@@ -1,0 +1,45 @@
+{
+  "brand": {
+    "englishTitle": "YIMING PHOTO ARCHIVE",
+    "chineseSubtitle": "一鸣私人摄影馆",
+    "museumLabel": "Private Photography Archive"
+  },
+  "seo": {
+    "title": "YIMING PHOTO ARCHIVE | 一鸣私人摄影馆",
+    "description": "一间安静、克制、长期维护的私人摄影网页展览馆。"
+  },
+  "home": {
+    "intro": "这里存放一些经过的地方、看见的光、城市里的片刻，以及某些不想被相册吞掉的瞬间。",
+    "supplement": "它不是普通相册，也不是商业作品集。这里的照片会被整理成展厅、展览、观看顺序和必要的文字。",
+    "primaryActionLabel": "Enter halls",
+    "secondaryActionLabel": "Archive index",
+    "hallsSectionLabel": "Halls",
+    "hallsSectionTitle": "展厅入口",
+    "hallsSectionDescription": "不同主题像不同展厅。每个展厅都保留自己的气质，但公开界面始终保持安静和克制。",
+    "currentSectionLabel": "Current",
+    "currentSectionTitle": "当前展览",
+    "currentSectionDescription": "展览不是相册列表，而是一组有顺序、有文字、有停顿的观看路径。",
+    "featuredLabel": "Current Exhibition",
+    "archiveLabel": "Archive",
+    "archiveTitle": "按时间回到所有展览",
+    "archiveLinkLabel": "Open archive"
+  },
+  "about": {
+    "seoTitle": "About | YIMING PHOTO ARCHIVE",
+    "seoDescription": "关于一鸣私人摄影馆。",
+    "sectionLabel": "About",
+    "sectionTitle": "关于这个摄影馆",
+    "body": [
+      "一鸣私人摄影馆不是商业作品集，也不是把所有照片堆在一起的相册。它更像一间慢慢布置的私人展馆：一些经过的地方，一些光线，一些城市里的片刻，被整理成展厅、展览和观看顺序。",
+      "这里的照片不急着证明什么。它们只是从日常里被取出来，获得一点留白、一点文字和一条更安静的观看路径。"
+    ],
+    "photographerTitle": "拍摄者",
+    "photographer": "私人记录者。持续整理正在发生和已经经过的影像。",
+    "gearTitle": "器材",
+    "gear": "Sony A7M4 / Mobile / Others as needed"
+  },
+  "footer": {
+    "note": "Private photography archive, quietly maintained.",
+    "copyright": "YIMING PHOTO ARCHIVE"
+  }
+}

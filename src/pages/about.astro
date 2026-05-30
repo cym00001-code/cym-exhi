@@ -2,30 +2,26 @@
 import Layout from '../layouts/Layout.astro';
 import SectionTitle from '../components/SectionTitle.astro';
 import MotionReveal from '../components/MotionReveal.astro';
+import siteCopy from '../data/site.json';
 ---
 
-<Layout title="About" description="关于一鸣私人摄影馆。">
+<Layout title={siteCopy.about.seoTitle} description={siteCopy.about.seoDescription}>
   <section class="page-section about-page">
     <MotionReveal>
-      <SectionTitle label="About" title="关于这个摄影馆" />
+      <SectionTitle label={siteCopy.about.sectionLabel} title={siteCopy.about.sectionTitle} />
     </MotionReveal>
     <div class="about-grid">
       <MotionReveal>
         <div class="about-copy">
-          <p>
-            一鸣私人摄影馆不是商业作品集，也不是把所有照片堆在一起的相册。它更像一间慢慢布置的私人展馆：一些经过的地方，一些光线，一些城市里的片刻，被整理成展厅、展览和观看顺序。
-          </p>
-          <p>
-            这里的照片不急着证明什么。它们只是从日常里被取出来，获得一点留白、一点文字和一条更安静的观看路径。
-          </p>
+          {siteCopy.about.body.map((paragraph) => <p>{paragraph}</p>)}
         </div>
       </MotionReveal>
       <MotionReveal>
         <aside class="about-note">
-          <h2>拍摄者</h2>
-          <p>私人记录者。持续整理正在发生和已经经过的影像。</p>
-          <h2>器材</h2>
-          <p>Sony A7M4 / Mobile / Others as needed</p>
+          <h2>{siteCopy.about.photographerTitle}</h2>
+          <p>{siteCopy.about.photographer}</p>
+          <h2>{siteCopy.about.gearTitle}</h2>
+          <p>{siteCopy.about.gear}</p>
         </aside>
       </MotionReveal>
     </div>

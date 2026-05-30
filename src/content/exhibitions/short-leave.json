@@ -10,6 +10,12 @@
   "intro": "这些照片暂时从日常里退后一步：车窗外的路、夜里发亮的地面、安静的走廊，以及没有被相册吞掉的几次停顿。",
   "status": "published",
   "featured": true,
+  "displayOrder": 1,
+  "chapters": [],
+  "seo": {
+    "title": "短暂离开日常 | YIMING PHOTO ARCHIVE",
+    "description": "一次从日常中短暂出走的影像记录。"
+  },
   "photos": [
     {
       "src": "/src/assets/exhibitions/short-leave/rain-walk.webp",
@@ -17,7 +23,9 @@
       "caption": "雨后，城市把路灯收进地面。",
       "location": "深圳",
       "date": "2026-05-30",
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "isCover": true,
+      "order": 1
     },
     {
       "src": "/src/assets/exhibitions/short-leave/window-road.webp",
@@ -25,7 +33,8 @@
       "caption": "车窗把远处的山和近处的路放在同一层玻璃上。",
       "location": "路上",
       "date": "2026-05-30",
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "order": 2
     },
     {
       "src": "/src/assets/exhibitions/short-leave/blue-corridor.webp",
@@ -33,7 +42,8 @@
       "caption": "走廊深处没有声音，只有一小块光还在。",
       "location": "广州",
       "date": "2026-05-30",
-      "orientation": "portrait"
+      "orientation": "portrait",
+      "order": 3
     },
     {
       "src": "/src/assets/exhibitions/short-leave/river-crossing.webp",
@@ -41,7 +51,8 @@
       "caption": "水面让城市退到更远的地方。",
       "location": "广州",
       "date": "2026-05-30",
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "order": 4
     },
     {
       "src": "/src/assets/exhibitions/short-leave/travel-table.webp",
@@ -49,7 +60,8 @@
       "caption": "临时桌面，也能成为一小段旅程的证据。",
       "location": "路上",
       "date": "2026-05-30",
-      "orientation": "square"
+      "orientation": "square",
+      "order": 5
     },
     {
       "src": "/src/assets/exhibitions/short-leave/passing-architecture.webp",
@@ -57,7 +69,8 @@
       "caption": "有些建筑不是被看见的，是从视线旁掠过去的。",
       "location": "路上",
       "date": "2026-05-30",
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "order": 6
     }
   ]
 }

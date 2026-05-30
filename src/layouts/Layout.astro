@@ -2,6 +2,7 @@
 import { ClientRouter } from 'astro:transitions';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import siteCopy from '../data/site.json';
 import '../styles/global.css';
 
 interface Props {
@@ -9,11 +10,8 @@ interface Props {
   description?: string;
 }
 
-const siteTitle = 'YIMING PHOTO ARCHIVE';
-const {
-  title = siteTitle,
-  description = '一鸣私人摄影馆：一个安静、克制、长期维护的私人摄影网页展览馆。',
-} = Astro.props;
+const siteTitle = siteCopy.brand.englishTitle;
+const { title = siteCopy.seo.title, description = siteCopy.seo.description } = Astro.props;
 
 const pageTitle = title === siteTitle ? siteTitle : `${title} | ${siteTitle}`;
 ---

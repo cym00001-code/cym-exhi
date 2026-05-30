@@ -1,0 +1,29 @@
+{
+  "publicNav": [
+    {
+      "href": "/halls",
+      "label": "Halls",
+      "enabled": true,
+      "order": 1
+    },
+    {
+      "href": "/archive",
+      "label": "Archive",
+      "enabled": true,
+      "order": 2
+    },
+    {
+      "href": "/about",
+      "label": "About",
+      "enabled": true,
+      "order": 3
+    }
+  ],
+  "home": {
+    "showFeaturedExhibition": true,
+    "showHalls": true,
+    "showArchiveEntry": true,
+    "showIntroText": true,
+    "hallSlugs": ["city", "travel", "campus", "still-life", "daily-notes", "experiments"]
+  }
+}

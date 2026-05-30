@@ -1,19 +1,23 @@
 ---
-const navItems = [
-  { href: '/halls', label: 'Halls' },
-  { href: '/archive', label: 'Archive' },
-  { href: '/about', label: 'About' },
-];
+import navigation from '../data/navigation.json';
+import siteCopy from '../data/site.json';
+
+const navItems = navigation.publicNav
+  .filter(
+    (item) =>
+      item.enabled && !item.href.startsWith('/studio') && !item.href.startsWith('/curator-studio'),
+  )
+  .sort((a, b) => a.order - b.order);
 
 const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
 ---
 
 <header class="site-header">
-  <a class="brand" href="/" aria-label="YIMING PHOTO ARCHIVE home">
+  <a class="brand" href="/" aria-label={`${siteCopy.brand.englishTitle} home`}>
     <span class="brand-mark">Y</span>
     <span>
-      <strong>YIMING PHOTO ARCHIVE</strong>
-      <small>一鸣私人摄影馆</small>
+      <strong>{siteCopy.brand.englishTitle}</strong>
+      <small>{siteCopy.brand.chineseSubtitle}</small>
     </span>
   </a>
   <nav class="public-nav" aria-label="Public exhibition navigation">

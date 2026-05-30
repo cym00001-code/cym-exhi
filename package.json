@@ -9,6 +9,8 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "studio": "node scripts/studio-dev.mjs",
+    "studio:api": "node scripts/studio-server.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",

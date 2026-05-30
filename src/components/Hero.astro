@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import siteCopy from '../data/site.json';
 
 interface Featured {
   title: string;
@@ -21,15 +22,13 @@ const { featured } = Astro.props;
 
 <section class="hero">
   <div class="hero-copy">
-    <p class="museum-label">Private Photography Archive</p>
-    <h1>YIMING PHOTO ARCHIVE</h1>
-    <p class="subtitle">一鸣私人摄影馆</p>
-    <p class="intro">
-      这里存放一些经过的地方、看见的光、城市里的片刻，以及某些不想被相册吞掉的瞬间。
-    </p>
+    <p class="museum-label">{siteCopy.brand.museumLabel}</p>
+    <h1>{siteCopy.brand.englishTitle}</h1>
+    <p class="subtitle">{siteCopy.brand.chineseSubtitle}</p>
+    <p class="intro">{siteCopy.home.intro}</p>
     <div class="hero-actions">
-      <a class="quiet-link" href="/halls">Enter halls</a>
-      <a class="quiet-link secondary" href="/archive">Archive index</a>
+      <a class="quiet-link" href="/halls">{siteCopy.home.primaryActionLabel}</a>
+      <a class="quiet-link secondary" href="/archive">{siteCopy.home.secondaryActionLabel}</a>
     </div>
   </div>
 
@@ -47,7 +46,7 @@ const { featured } = Astro.props;
           />
         </div>
         <div class="featured-text">
-          <p>Current Exhibition</p>
+          <p>{siteCopy.home.featuredLabel}</p>
           <h2>{featured.title}</h2>
           <span>{featured.subtitle}</span>
           <small>

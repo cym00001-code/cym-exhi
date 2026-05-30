@@ -6,5 +6,9 @@
   "mood": ["桌面", "窗光", "器物", "慢下来的日常"],
   "status": "active",
   "order": 4,
-  "tone": "brown-gray"
+  "showOnHome": true,
+  "cover": "",
+  "tone": "brown-gray",
+  "accent": "#8b8074",
+  "layoutHint": "object-study"
 }

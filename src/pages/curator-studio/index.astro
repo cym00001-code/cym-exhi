@@ -1,0 +1,90 @@
+---
+import StudioShell from '../../components/studio/StudioShell.astro';
+import studioClientUrl from '../../scripts/studio-client.js?url';
+---
+
+<StudioShell title="Curator Studio">
+  <div class="studio-app" data-studio-app>
+    <aside class="studio-sidebar">
+      <div class="studio-brand">
+        <span>Private Curator Workspace</span>
+        <strong>Studio</strong>
+      </div>
+
+      <nav class="studio-nav" aria-label="Curator Studio navigation">
+        <button type="button" data-module="overview" aria-current="page">
+          <span>Overview / 控制台首页</span>
+          <small>01</small>
+        </button>
+        <button type="button" data-module="site-copy">
+          <span>Site Copy / 全站文案</span>
+          <small>02</small>
+        </button>
+        <button type="button" data-module="navigation">
+          <span>Navigation / 导航与首页</span>
+          <small>03</small>
+        </button>
+        <button type="button" data-module="halls">
+          <span>Halls / 展厅管理</span>
+          <small>04</small>
+        </button>
+        <button type="button" data-module="exhibitions">
+          <span>Exhibitions / 展览管理</span>
+          <small>05</small>
+        </button>
+        <button type="button" data-module="photos">
+          <span>Photos Metadata / 照片信息</span>
+          <small>06</small>
+        </button>
+        <button type="button" data-module="health">
+          <span>Health Check / 内容检查</span>
+          <small>07</small>
+        </button>
+        <button type="button" data-module="docs">
+          <span>Project Docs / 项目文档</span>
+          <small>08</small>
+        </button>
+      </nav>
+
+      <p class="studio-sidebar-note">
+        Studio 是云端受保护的私人策展台。/studio 不公开；当前入口为 /curator-studio。
+      </p>
+    </aside>
+
+    <main class="studio-main">
+      <header class="studio-topbar">
+        <div>
+          <p class="studio-kicker" id="studio-module-kicker">Curator Studio</p>
+          <h1 id="studio-module-title">Overview</h1>
+          <p id="studio-module-description">读取本地内容中。</p>
+        </div>
+        <div class="studio-actions">
+          <span class="studio-status" id="studio-save-status">Connecting</span>
+          <a class="studio-link-button secondary" href="/" target="_blank" rel="noreferrer">
+            返回公开网站
+          </a>
+          <a class="studio-link-button subtle" href="/" target="_blank" rel="noreferrer">
+            打开展馆预览
+          </a>
+          <button class="studio-button subtle" type="button" data-action="logout">退出登录</button>
+        </div>
+      </header>
+
+      <div class="studio-content" id="studio-root" aria-live="polite">
+        <section class="studio-panel studio-api-down">
+          <div class="studio-panel-header">
+            <div>
+              <h2>正在连接本地 Studio API</h2>
+              <p>请使用 pnpm studio 启动本地策展台。</p>
+            </div>
+          </div>
+          <div class="studio-panel-body">
+            <code class="studio-code">pnpm studio</code>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script is:inline type="module" src={studioClientUrl}></script>
+</StudioShell>

@@ -6,5 +6,9 @@
   "mood": ["路上", "车窗", "临时停靠", "远处的水面"],
   "status": "active",
   "order": 2,
-  "tone": "warm"
+  "showOnHome": true,
+  "cover": "/src/assets/exhibitions/short-leave/rain-walk.webp",
+  "tone": "warm",
+  "accent": "#8a7767",
+  "layoutHint": "sequence-led"
 }

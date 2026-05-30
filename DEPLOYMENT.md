@@ -18,53 +18,71 @@ pnpm check
 pnpm build
 ```
 
-本地预览：
+带 Studio API 的本地开发：
 
 ```bash
-pnpm preview
+pnpm studio
 ```
 
-构建产物位于 `dist/`。Phase 1 部署为静态站，不需要服务器安装项目依赖。Playwright 只用于本地渲染 QA，不随部署产物上传。
-
-## 服务器部署目标
-
-服务器信息来自本地服务器说明文档。
+## 服务器目标
 
 - SSH：`ssh server`
 - 公开访问：`http://8.138.150.200:8080/`
-- Nginx 站点配置：`/www/server/panel/vhost/nginx/photo-exhibition.conf`
-- 新站根目录：`/www/wwwroot/photo-exhibition-site`
-- 发布目录：`/www/wwwroot/photo-exhibition-site/releases/<timestamp>/`
-- 当前版本软链：`/www/wwwroot/photo-exhibition-site/current`
-
-旧服务：
-
+- Studio：`http://8.138.150.200:8080/curator-studio`
+- Nginx 配置：`/www/server/panel/vhost/nginx/photo-exhibition.conf`
+- 项目根目录：`/www/wwwroot/photo-exhibition-site`
+- 应用目录：`/www/wwwroot/photo-exhibition-site/app`
+- 静态发布目录：`/www/wwwroot/photo-exhibition-site/releases/<timestamp>/`
+- 当前静态软链：`/www/wwwroot/photo-exhibition-site/current`
 - PM2 应用：`photo-exhibition`
-- 端口：`3000`
-- 旧目录：`/www/wwwroot/photo-exhibition-site`
+- API 端口：`127.0.0.1:3000`
 
-Phase 1 新站会接管旧服务。执行部署前必须备份旧站。
+## 云端架构
 
-## 发布流程
+Nginx 直接服务 `current` 中的 Astro 静态站：
 
-1. 本地运行检查和构建。
-2. 在服务器创建旧站备份：
+- 公开页面为静态文件。
+- `/curator-studio` 也是静态页面，但没有登录无法读取内容。
+- `/api/curator-studio` 反向代理到 PM2 内网 API。
+- `/studio` 继续返回 404。
+
+PM2 API 负责：
+
+- 鉴权登录与 HttpOnly session cookie。
+- 读取 `src/data` 与 `src/content`。
+- 保存前备份到 `.studio-backups/`。
+- 写回 JSON 内容文件。
+- 保存后运行 `pnpm build`。
+- 将 `dist/` 复制到新 release。
+- 更新 `current` 软链。
+
+## 环境变量
+
+服务器 `.env` 必须只存在于服务器或本机未跟踪文件，不得提交。
+
+需要配置：
 
 ```bash
-mkdir -p /www/backups/photo-exhibition-site
-tar --exclude='node_modules' -czf /www/backups/photo-exhibition-site/legacy-<timestamp>.tar.gz -C /www/wwwroot photo-exhibition-site
+STUDIO_PATH=/curator-studio
+STUDIO_API_BASE=/api/curator-studio
+STUDIO_HOST=127.0.0.1
+STUDIO_API_PORT=3000
+STUDIO_PASSWORD_HASH=sha256:<hash>
+STUDIO_SESSION_SECRET=<long-random-secret>
+STUDIO_SESSION_HOURS=8
+STUDIO_PUBLISH_MODE=release
+STUDIO_AUTO_BUILD=1
+STUDIO_RELEASES_DIR=/www/wwwroot/photo-exhibition-site/releases
+STUDIO_CURRENT_LINK=/www/wwwroot/photo-exhibition-site/current
 ```
 
-3. 停止旧 PM2 应用：
+生成密码 hash：
 
 ```bash
-pm2 stop photo-exhibition
-pm2 delete photo-exhibition
+node -e "console.log(require('crypto').createHash('sha256').update('your-password').digest('hex'))"
 ```
 
-4. 上传本地 `dist/` 到新 release 目录。
-5. 更新 `current` 软链指向最新 release。
-6. 将 Nginx 改为直接服务静态文件：
+## Nginx 示例
 
 ```nginx
 server {
@@ -82,8 +100,17 @@ server {
         return 404;
     }
 
+    location ^~ /api/curator-studio/ {
+        proxy_pass http://127.0.0.1:3000/api/curator-studio/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     location / {
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ =404;
     }
 
     location ~* \.(jpg|jpeg|png|gif|webp|avif|css|js|ico|svg|woff2?)$ {
@@ -94,61 +121,58 @@ server {
 }
 ```
 
-7. 重载 Nginx：
+## 部署流程
+
+1. 本地运行 `pnpm check` 和 `pnpm build`。
+2. 打包项目源码，排除 `node_modules`、`dist`、`.git`、`.env`、`.studio-backups`。
+3. 上传到服务器 `/www/wwwroot/photo-exhibition-site/app`。
+4. 在服务器 app 目录安装依赖。
+5. 确认服务器 `.env` 已配置 Studio 密码 hash 和 session secret。
+6. 运行 `pnpm build`，复制 `dist` 到新 release，并更新 `current`。
+7. 启动或重启 PM2：`pm2 start ecosystem.config.cjs --update-env`。
+8. 更新并重载 Nginx。
+
+## 验证
 
 ```bash
-/www/server/nginx/sbin/nginx -t
-/www/server/nginx/sbin/nginx -s reload
-```
-
-8. 验证：
-
-```bash
+pm2 status photo-exhibition
 curl -I http://127.0.0.1:8080/
 curl -I http://127.0.0.1:8080/studio
+curl -I http://127.0.0.1:8080/curator-studio
+curl -I http://127.0.0.1:8080/halls/campus/
+curl -i http://127.0.0.1:8080/api/curator-studio/content
 ```
 
-公网验证：
+预期：
 
-```bash
-curl -I http://8.138.150.200:8080/
-curl -I http://8.138.150.200:8080/studio
-```
-
-## Curator Studio 上线注意事项
-
-`/studio` 是私人策展台，不属于公开展馆。生产环境在 Phase 1 应禁止公开访问。
-
-未来开放 `/studio` 前必须满足至少一种条件：
-
-- 仅本地运行，不部署到公网。
-- 有可靠鉴权。
-- 有清晰的上传、图片压缩、EXIF 读取、metadata 生成和发布流程。
-- 若使用 Supabase，必须正确配置 Auth、RLS、Storage 权限和服务端密钥边界。
+- `/` 返回 200。
+- `/studio` 返回 404。
+- `/curator-studio` 返回 200。
+- 未登录访问 `/api/curator-studio/content` 返回 401。
+- 登录后 Studio 可读取内容、保存、备份并发布。
 
 ## 回滚方式
 
-如果当前 release 出问题：
-
-1. 查看可用版本：
+查看可用 release：
 
 ```bash
 ls -la /www/wwwroot/photo-exhibition-site/releases
 ```
 
-2. 将 `current` 指回上一个 release：
+回滚：
 
 ```bash
 ln -sfn /www/wwwroot/photo-exhibition-site/releases/<previous> /www/wwwroot/photo-exhibition-site/current
 /www/server/nginx/sbin/nginx -s reload
 ```
 
-3. 如果需要回到旧 PM2 站点，先从 `/www/backups/photo-exhibition-site/legacy-<timestamp>.tar.gz` 恢复，并重新启动对应 PM2 配置。恢复旧站前不要删除备份。
+如果 API 代码出问题，先回滚 Git 工作树或重新上传上一版 app，再重启 PM2。不要删除 `.env`、`data/`、`releases/` 或 `.studio-backups/`。
 
 ## 常见问题
 
-- `pnpm` 不存在：先全局安装 `npm install -g pnpm`。
-- `pnpm` 拦截 `sharp` / `esbuild` 构建脚本：运行 `pnpm approve-builds --all` 后重新 `pnpm install`。
-- 服务器内存较小：优先本地构建，只上传 `dist/`，不要在服务器上安装依赖和构建。
-- `/studio` 公开可访问：检查 Nginx 中 `/studio` 的 404 规则是否生效。
-- 图片太大：不要上传原片，先生成网页展示图、封面图和缩略图。
+- `pnpm` 不存在：先安装 pnpm。
+- Node 版本不满足 Astro：升级服务器 Node，或使用指定 Node 运行 PM2 和构建。
+- 保存成功但页面没变：检查 API publish 返回、`pnpm build` 日志和 `current` 软链。
+- `/curator-studio` 无法登录：检查 `.env` 中 `STUDIO_PASSWORD_HASH` 和 `STUDIO_SESSION_SECRET`。
+- `/studio` 公开可访问：检查 Nginx 404 规则。
+- 内存不足：停止无关旧服务，避免并发构建。

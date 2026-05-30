@@ -6,5 +6,9 @@
   "mood": ["街灯", "玻璃", "雨后的路面", "夜色里的反光"],
   "status": "active",
   "order": 1,
-  "tone": "blue-gray"
+  "showOnHome": true,
+  "cover": "",
+  "tone": "blue-gray",
+  "accent": "#6f7f88",
+  "layoutHint": "archive-calm"
 }

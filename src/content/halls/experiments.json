@@ -6,5 +6,9 @@
   "mood": ["黑白", "颗粒", "模糊", "切片"],
   "status": "active",
   "order": 6,
-  "tone": "monochrome"
+  "showOnHome": true,
+  "cover": "",
+  "tone": "monochrome",
+  "accent": "#2a2a28",
+  "layoutHint": "sharp-study"
 }

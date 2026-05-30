@@ -12,6 +12,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# local curator studio backups
+.studio-backups/
+.curator-studio-credentials.local.txt
+
 
 # environment variables
 .env

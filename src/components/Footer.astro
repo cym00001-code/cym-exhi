@@ -1,7 +1,11 @@
+---
+import siteCopy from '../data/site.json';
+---
+
 <footer class="site-footer">
   <div>
-    <p>YIMING PHOTO ARCHIVE</p>
-    <small>Private photography exhibition archive. Built as a quiet public gallery.</small>
+    <p>{siteCopy.footer.copyright}</p>
+    <small>{siteCopy.footer.note}</small>
   </div>
   <a class="quiet-link" href="/archive">Archive</a>
 </footer>
