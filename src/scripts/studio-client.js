@@ -66,6 +66,7 @@ const state = {
   selectedHall: null,
   selectedExhibition: null,
   selectedPhotoExhibition: null,
+  editingNewHall: false,
   editingNewExhibition: false,
   filters: {
     hall: 'all',
@@ -320,6 +321,27 @@ function getNavigationDraft() {
 
 function getFeaturedSlug() {
   return state.content.exhibitions.find((item) => item.featured)?.slug || '';
+}
+
+function getFoundationalHalls() {
+  return (
+    state.content.meta?.foundationalHalls || [
+      'city',
+      'travel',
+      'campus',
+      'still-life',
+      'daily-notes',
+      'experiments',
+    ]
+  );
+}
+
+function isFoundationalHall(slug) {
+  return getFoundationalHalls().includes(slug);
+}
+
+function getHallExhibitionCount(slug) {
+  return state.content.exhibitions.filter((exhibition) => exhibition.hallSlug === slug).length;
 }
 
 function getHallName(slug) {
@@ -825,11 +847,16 @@ function renderHalls() {
   const halls = state.content.halls;
   const selected = halls.find((hall) => hall.slug === state.selectedHall) || halls[0];
 
-  if (selected && state.selectedHall !== selected.slug) {
+  if (!state.editingNewHall && selected && state.selectedHall !== selected.slug) {
     state.selectedHall = selected.slug;
   }
 
-  const draft = selected ? ensureDraft(`hall:${selected.slug}`, selected) : null;
+  const draft =
+    state.editingNewHall && state.draftKind === 'hall:_new'
+      ? state.draft
+      : selected
+        ? ensureDraft(`hall:${selected.slug}`, selected)
+        : null;
 
   return `
     <div class="studio-grid">
@@ -839,9 +866,13 @@ function renderHalls() {
         '展厅列表',
         '六大基础展厅可以 hidden，但不要直接删除。修改 slug 前会提示旧链接和展览引用风险。',
         `
+          <div class="studio-toolbar">
+            <button class="studio-button" type="button" data-action="new-hall">新建展厅</button>
+            <span class="studio-publish-note">新建后保存即发布</span>
+          </div>
           <div class="studio-table-wrap">
             <table class="studio-table">
-              <thead><tr><th>名称</th><th>English</th><th>Slug</th><th>Status</th><th>Order</th><th>首页</th><th>操作</th></tr></thead>
+              <thead><tr><th>名称</th><th>English</th><th>Slug</th><th>Status</th><th>Order</th><th>首页</th><th>展览</th><th>操作</th></tr></thead>
               <tbody>
                 ${halls
                   .map(
@@ -853,6 +884,7 @@ function renderHalls() {
                         <td>${statusPill(hall.status)}</td>
                         <td>${escapeHtml(hall.order)}</td>
                         <td>${hall.showOnHome ? '是' : '否'}</td>
+                        <td>${escapeHtml(getHallExhibitionCount(hall.slug))}</td>
                         <td>
                           <div class="studio-row-actions">
                             <button class="studio-button subtle" type="button" data-select-hall="${escapeAttr(
@@ -861,6 +893,9 @@ function renderHalls() {
                             <a class="studio-link-button subtle" href="${publicHrefForHall(
                               hall.slug,
                             )}" target="_blank" rel="noreferrer">预览</a>
+                            <button class="studio-button danger" type="button" data-action="delete-hall" data-delete-hall="${escapeAttr(
+                              hall.slug,
+                            )}">删除</button>
                           </div>
                         </td>
                       </tr>
@@ -876,8 +911,10 @@ function renderHalls() {
       ${
         draft
           ? panel(
-              `编辑展厅：${draft.name}`,
-              '展厅数据存储在 src/content/halls/*.json。',
+              state.editingNewHall ? '新建展厅' : `编辑展厅：${draft.name}`,
+              state.editingNewHall
+                ? '新展厅会写入 src/content/halls/*.json。保存后会自动发布到公开展馆。'
+                : '展厅数据存储在 src/content/halls/*.json。',
               `
                 <form class="studio-form" data-form-kind="hall">
                   <div class="studio-form-grid">
@@ -1422,6 +1459,7 @@ function bindRenderedControls() {
         return;
       }
       state.selectedHall = button.dataset.selectHall;
+      state.editingNewHall = false;
       state.draft = null;
       render();
     });
@@ -1575,6 +1613,7 @@ document.addEventListener('click', async (event) => {
     }
     state.draft = null;
     state.draftKind = null;
+    state.editingNewHall = false;
     markClean('Reset');
     render();
     return;
@@ -1585,6 +1624,7 @@ document.addEventListener('click', async (event) => {
       return;
     }
     state.draft = null;
+    state.editingNewHall = false;
     await loadContent();
     return;
   }
@@ -1601,7 +1641,29 @@ document.addEventListener('click', async (event) => {
     state.authenticated = false;
     state.content = null;
     state.draft = null;
+    state.editingNewHall = false;
     renderLogin('已退出登录。');
+    return;
+  }
+
+  if (action === 'new-hall') {
+    if (!guardDirty()) {
+      return;
+    }
+    state.module = 'halls';
+    state.editingNewHall = true;
+    const hall = createNewHall();
+    state.selectedHall = hall.slug;
+    state.draftKind = 'hall:_new';
+    state.draft = hall;
+    state.dirty = true;
+    setStatus('New hall unsaved', 'dirty');
+    render();
+    return;
+  }
+
+  if (action === 'delete-hall') {
+    await deleteHall(event.target.closest('[data-delete-hall]')?.dataset.deleteHall);
     return;
   }
 
@@ -1610,6 +1672,7 @@ document.addEventListener('click', async (event) => {
       return;
     }
     state.module = 'exhibitions';
+    state.editingNewHall = false;
     state.editingNewExhibition = true;
     const exhibition = createNewExhibition();
     state.selectedExhibition = exhibition.slug;
@@ -1707,6 +1770,7 @@ function changeModule(module) {
   state.module = nextModule;
   state.draft = null;
   state.draftKind = null;
+  state.editingNewHall = false;
   state.editingNewExhibition = false;
   render();
 }
@@ -1734,8 +1798,8 @@ async function saveCurrent(kind) {
     }
 
     if (kind === 'hall') {
-      const oldSlug = state.selectedHall;
-      if (oldSlug !== state.draft.slug) {
+      const oldSlug = state.editingNewHall ? '_new' : state.selectedHall;
+      if (!state.editingNewHall && oldSlug !== state.draft.slug) {
         const ok = window.confirm('修改展厅 slug 可能影响旧链接和已有展览引用。确定继续吗？');
         if (!ok) {
           setStatus('Save cancelled', '');
@@ -1744,6 +1808,7 @@ async function saveCurrent(kind) {
       }
       const result = await post(`/halls/${oldSlug}`, state.draft);
       state.selectedHall = result.slug;
+      state.editingNewHall = false;
       await reloadAfterSave('hall', result);
       return;
     }
@@ -1815,6 +1880,92 @@ async function post(path, body) {
   }
 
   return payload;
+}
+
+async function deleteHall(slug) {
+  if (!slug) {
+    return;
+  }
+
+  if (!guardDirty()) {
+    return;
+  }
+
+  const hall = state.content.halls.find((item) => item.slug === slug);
+  if (!hall) {
+    window.alert(`找不到展厅：${slug}`);
+    return;
+  }
+
+  const count = getHallExhibitionCount(slug);
+  if (count > 0) {
+    window.alert(
+      `不能删除「${hall.name}」。当前有 ${count} 个展览仍然引用这个展厅，请先移动或隐藏相关展览。`,
+    );
+    return;
+  }
+
+  let confirmation = slug;
+  let confirmFoundation = false;
+
+  if (isFoundationalHall(slug)) {
+    confirmation = window.prompt(
+      `「${hall.name}」是基础展厅。更推荐改为 hidden。若确实要删除，请输入 slug：${slug}`,
+      '',
+    );
+    if (confirmation !== slug) {
+      setStatus('Delete cancelled', '');
+      return;
+    }
+    confirmFoundation = true;
+  } else {
+    const ok = window.confirm(
+      `确定删除展厅「${hall.name}」吗？删除前会自动备份，保存后会自动发布。`,
+    );
+    if (!ok) {
+      setStatus('Delete cancelled', '');
+      return;
+    }
+  }
+
+  try {
+    setStatus('Deleting hall', 'dirty');
+    const result = await post(`/halls/${slug}/delete`, { confirmation, confirmFoundation });
+    state.selectedHall = state.content.halls.find((item) => item.slug !== slug)?.slug || null;
+    state.editingNewHall = false;
+    await reloadAfterSave('hall deleted', result);
+  } catch (error) {
+    setStatus('Delete failed', 'error');
+    window.alert(`删除失败：\n${error.message || String(error)}`);
+  }
+}
+
+function createNewHall() {
+  const existing = new Set(state.content.halls.map((item) => item.slug));
+  let slug = 'new-hall';
+  let index = 2;
+
+  while (existing.has(slug)) {
+    slug = `new-hall-${index}`;
+    index += 1;
+  }
+
+  const nextOrder = Math.max(0, ...state.content.halls.map((hall) => Number(hall.order) || 0)) + 1;
+
+  return {
+    slug,
+    name: '新展厅',
+    englishName: 'New Hall',
+    description: '这里写这个展厅的观看边界、气质和收纳内容。',
+    mood: ['待整理'],
+    status: 'hidden',
+    order: nextOrder,
+    showOnHome: false,
+    cover: '',
+    tone: 'warm',
+    accent: '',
+    layoutHint: '',
+  };
 }
 
 function createNewExhibition() {

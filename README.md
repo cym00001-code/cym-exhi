@@ -80,7 +80,7 @@ pnpm format:check
 Curator Studio 按日常工作流组织，可管理：
 
 - `Home Control / 首页与导航`：首页大厅文案、公开导航、首页展厅入口、Archive 开关、突出显示的展览
-- `Halls / 展厅管理`：六大展厅名称、说明、状态、排序、首页展示与预留视觉字段
+- `Halls / 展厅管理`：新建展厅、编辑六大展厅名称、说明、状态、排序、首页展示与预留视觉字段；删除展厅前会检查展览引用并创建备份
 - `Exhibitions / 展览管理`：展览标题、所属展厅、状态、featured、SEO、章节预留和公开预览
 - `Photos / 照片与封面`：展览照片的 `src`、`alt`、caption、排序、封面和方向
 - `Site Text / 站点文案`：品牌、SEO、About、Footer

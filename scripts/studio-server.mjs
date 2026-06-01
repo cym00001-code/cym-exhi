@@ -729,19 +729,21 @@ async function saveHall(oldSlug, payload) {
   const errors = validateHall(payload);
   if (errors.length) throw httpError(400, errors.join('\n'));
 
-  assertSlug(oldSlug, 'Current hall');
+  const creating = oldSlug === '_new';
+  if (!creating) assertSlug(oldSlug, 'Current hall');
+
   const stamp = timestamp();
   const oldRelative = `${paths.hallsDir}/${oldSlug}.json`;
   const newRelative = `${paths.hallsDir}/${payload.slug}.json`;
 
-  if (oldSlug !== payload.slug && (await fileExists(toAbsolute(newRelative)))) {
+  if ((creating || oldSlug !== payload.slug) && (await fileExists(toAbsolute(newRelative)))) {
     throw httpError(409, `Hall slug already exists: ${payload.slug}`);
   }
 
-  await backupFile(oldRelative, stamp);
+  if (!creating) await backupFile(oldRelative, stamp);
   await writeJson(newRelative, payload, stamp);
 
-  if (oldSlug !== payload.slug && (await fileExists(toAbsolute(oldRelative)))) {
+  if (!creating && oldSlug !== payload.slug && (await fileExists(toAbsolute(oldRelative)))) {
     await fs.unlink(toAbsolute(oldRelative));
   }
 
@@ -750,6 +752,49 @@ async function saveHall(oldSlug, payload) {
     backupGroup: stamp,
     oldSlug,
     slug: payload.slug,
+    publish: await publishStaticSite(),
+  };
+}
+
+async function deleteHall(slug, payload) {
+  assertSlug(slug, 'Hall');
+
+  const content = await loadContent();
+  const hall = content.halls.find((item) => item.slug === slug);
+  if (!hall) throw httpError(404, `Hall not found: ${slug}`);
+
+  const references = content.exhibitions.filter((exhibition) => exhibition.hallSlug === slug);
+  if (references.length) {
+    throw httpError(
+      409,
+      `Hall is still referenced by exhibitions: ${references.map((item) => item.slug).join(', ')}`,
+    );
+  }
+
+  if (String(payload?.confirmation ?? '') !== slug) {
+    throw httpError(400, 'Hall deletion requires slug confirmation.');
+  }
+
+  if (foundationalHalls.includes(slug) && payload?.confirmFoundation !== true) {
+    throw httpError(400, 'Foundational hall deletion requires explicit confirmation.');
+  }
+
+  const stamp = timestamp();
+  const relativePath = `${paths.hallsDir}/${slug}.json`;
+  await backupFile(relativePath, stamp);
+  await fs.unlink(toAbsolute(relativePath));
+
+  const navigation = content.navigation;
+  const hallSlugs = navigation.home?.hallSlugs ?? [];
+  if (hallSlugs.includes(slug)) {
+    navigation.home.hallSlugs = hallSlugs.filter((hallSlug) => hallSlug !== slug);
+    await writeJson(paths.navigation, navigation, stamp);
+  }
+
+  return {
+    deleted: true,
+    slug,
+    backupGroup: stamp,
     publish: await publishStaticSite(),
   };
 }
@@ -859,6 +904,11 @@ async function route(req, res) {
 
   if (req.method === 'POST' && rest[0] === 'home') {
     jsonResponse(req, res, 200, await saveHomeControl(await readBody(req)));
+    return;
+  }
+
+  if (req.method === 'POST' && rest[0] === 'halls' && rest[1] && rest[2] === 'delete') {
+    jsonResponse(req, res, 200, await deleteHall(rest[1], await readBody(req)));
     return;
   }
 
