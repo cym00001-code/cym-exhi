@@ -132,6 +132,11 @@ button {
   color: var(--studio-ink);
 }
 
+.studio-nav span {
+  min-width: 0;
+  line-height: 1.35;
+}
+
 .studio-nav small {
   color: var(--studio-muted-2);
   font-family: var(--studio-mono);
@@ -195,6 +200,7 @@ button {
 }
 
 .studio-panel {
+  min-width: 0;
   border: 1px solid var(--studio-line);
   border-radius: var(--studio-radius);
   background: var(--studio-panel);
@@ -240,6 +246,58 @@ button {
 
 .studio-grid.cols-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.studio-guide {
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--studio-radius);
+  background: linear-gradient(135deg, rgba(255, 253, 248, 0.9), rgba(245, 241, 233, 0.78));
+}
+
+.studio-guide h2 {
+  margin: 0.35rem 0 0;
+  font-family: var(--studio-serif);
+  font-size: 1.28rem;
+  font-weight: 400;
+}
+
+.studio-guide p {
+  max-width: 46rem;
+  margin: 0.5rem 0 0;
+  color: var(--studio-muted);
+  line-height: 1.7;
+}
+
+.studio-surface-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.studio-surface-list code,
+.studio-publish-note {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.7rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--studio-line);
+  border-radius: 999px;
+  background: rgba(98, 118, 130, 0.08);
+  color: var(--studio-blue);
+  font-family: var(--studio-mono);
+  font-size: 0.68rem;
+}
+
+.studio-publish-note {
+  background: transparent;
+  color: var(--studio-muted);
 }
 
 .studio-stat {
@@ -380,6 +438,17 @@ button {
 .studio-table td {
   color: var(--studio-ink-soft);
   font-size: 0.92rem;
+}
+
+.studio-table input,
+.studio-table select {
+  width: 100%;
+  min-height: 2.25rem;
+  border: 1px solid var(--studio-line);
+  border-radius: var(--studio-radius);
+  background: var(--studio-bg-soft);
+  color: var(--studio-ink);
+  padding: 0.45rem 0.55rem;
 }
 
 .studio-table tr:last-child td {
@@ -615,6 +684,7 @@ button {
   .studio-sidebar {
     position: relative;
     height: auto;
+    gap: 1rem;
     border-right: 0;
     border-bottom: 1px solid var(--studio-line);
   }
@@ -627,9 +697,19 @@ button {
     position: relative;
     align-items: flex-start;
     flex-direction: column;
+    min-height: auto;
   }
 
   .studio-actions {
+    justify-content: flex-start;
+  }
+
+  .studio-guide {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .studio-surface-list {
     justify-content: flex-start;
   }
 
@@ -645,7 +725,15 @@ button {
     padding-top: 1.25rem;
   }
 
-  .studio-nav,
+  .studio-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .studio-nav button {
+    min-height: 2.8rem;
+  }
+
   .studio-grid.cols-2,
   .studio-grid.cols-3,
   .studio-form-grid,
@@ -657,6 +745,24 @@ button {
   .studio-panel-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .studio-actions,
+  .studio-toolbar,
+  .studio-row-actions {
+    align-items: stretch;
+  }
+
+  .studio-button,
+  .studio-link-button {
+    min-height: 2.55rem;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 420px) {
+  .studio-nav {
+    grid-template-columns: 1fr;
   }
 }
 

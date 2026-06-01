@@ -1,0 +1,164 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { ExhibitionEntry, HallEntry } from '../utils/content';
+import siteCopy from '../data/site.json';
+
+interface Props {
+  exhibition: ExhibitionEntry;
+  hall?: HallEntry;
+  image: ImageMetadata;
+}
+
+const { exhibition, hall, image } = Astro.props;
+---
+
+<a class="featured-exhibition" href={`/exhibitions/${exhibition.data.slug}`}>
+  <div class="featured-image">
+    <Image
+      src={image}
+      alt={exhibition.data.photos[0]?.alt ?? exhibition.data.title}
+      widths={[640, 960, 1280, 1600]}
+      sizes="(max-width: 820px) 100vw, 50vw"
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+
+  <div class="featured-copy">
+    <p class="eyebrow">{siteCopy.home.featuredLabel}</p>
+    <h3>{exhibition.data.title}</h3>
+    <p class="subtitle">{exhibition.data.subtitle}</p>
+    <p class="intro">{exhibition.data.intro}</p>
+    <div class="featured-meta">
+      {hall && <span>所属展厅：{hall.data.name}</span>}
+      <span>{exhibition.data.location}</span>
+      <span>{exhibition.data.dateLabel ?? exhibition.data.date}</span>
+    </div>
+    <span class="quiet-link">进入这个展览</span>
+  </div>
+</a>
+
+<style>
+  .featured-exhibition {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.9fr) minmax(0, 0.82fr);
+    gap: clamp(1.5rem, 5vw, 5rem);
+    align-items: stretch;
+    padding: var(--space-4) 0 var(--space-5);
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+    color: inherit;
+  }
+
+  .featured-image {
+    overflow: hidden;
+    min-height: 22rem;
+    border: 1px solid rgba(24, 21, 17, 0.16);
+    background: var(--color-stone-100);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .featured-image :global(img) {
+    width: 100%;
+    height: 100%;
+    min-height: 22rem;
+    object-fit: cover;
+    filter: saturate(0.92) contrast(0.97);
+    transition:
+      filter var(--motion-duration) var(--motion-ease),
+      transform 900ms var(--motion-ease);
+  }
+
+  .featured-exhibition:hover .featured-image :global(img) {
+    transform: scale(1.018);
+    filter: saturate(1) contrast(1);
+  }
+
+  .featured-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .eyebrow,
+  .featured-meta {
+    color: var(--color-blue-gray);
+    font-family: var(--font-mono);
+    font-size: 0.73rem;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .eyebrow {
+    margin: 0 0 var(--space-3);
+  }
+
+  h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: var(--step-3);
+    font-weight: 400;
+    line-height: 1.05;
+  }
+
+  .subtitle {
+    margin: var(--space-2) 0 0;
+    color: var(--color-ink-soft);
+    font-size: var(--step-1);
+    line-height: 1.6;
+  }
+
+  .intro {
+    max-width: 36rem;
+    margin: var(--space-4) 0 0;
+    color: var(--color-muted);
+    line-height: 1.9;
+  }
+
+  .featured-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.1rem;
+    margin-top: var(--space-4);
+    color: var(--color-muted);
+  }
+
+  .quiet-link {
+    margin-top: var(--space-4);
+  }
+
+  @media (max-width: 820px) {
+    .featured-exhibition {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+      padding: var(--space-3) 0 var(--space-4);
+    }
+
+    .featured-image,
+    .featured-image :global(img) {
+      min-height: 18rem;
+    }
+
+    .featured-copy {
+      justify-content: start;
+    }
+
+    .intro {
+      margin-top: var(--space-3);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .featured-image,
+    .featured-image :global(img) {
+      min-height: 15.5rem;
+    }
+
+    .featured-meta {
+      display: grid;
+      gap: 0.35rem;
+    }
+  }
+</style>

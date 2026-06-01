@@ -9,15 +9,10 @@ const modules = {
     kicker: '控制台首页',
     description: '查看展馆内容概况、最近修改和快速入口。',
   },
-  'site-copy': {
-    title: 'Site Copy',
-    kicker: '全站文案',
-    description: '编辑首页、About、Footer 和 SEO 等主要描述性文案。',
-  },
-  navigation: {
-    title: 'Navigation',
-    kicker: '导航与首页展示',
-    description: '管理公开导航、首页展厅入口和首页区块显示逻辑。',
+  'home-control': {
+    title: 'Home Control',
+    kicker: '首页与导航',
+    description: '集中管理首页文案、公开导航、首页展厅入口、Archive 开关和突出显示的展览。',
   },
   halls: {
     title: 'Halls',
@@ -30,14 +25,19 @@ const modules = {
     description: '筛选、创建和编辑展览 metadata 与基础展示逻辑。',
   },
   photos: {
-    title: 'Photos Metadata',
-    kicker: '照片信息管理',
+    title: 'Photos',
+    kicker: '照片与封面',
     description: '管理已有图片的 alt、caption、排序、封面和所属展览信息。',
   },
+  'site-text': {
+    title: 'Site Text',
+    kicker: '站点文案',
+    description: '编辑品牌、SEO、About、Footer 等站点级文字。',
+  },
   health: {
-    title: 'Health Check',
-    kicker: '内容健康检查',
-    description: '发现会影响公开展示、构建或长期维护的数据问题。',
+    title: 'Health & Publish',
+    kicker: '健康与发布',
+    description: '发现内容问题，并确认保存后自动构建发布的状态。',
   },
   docs: {
     title: 'Project Docs',
@@ -46,10 +46,20 @@ const modules = {
   },
 };
 
+const moduleAliases = {
+  navigation: 'home-control',
+  'site-copy': 'site-text',
+};
+
+function normalizeModule(module) {
+  const normalized = moduleAliases[module] || module;
+  return modules[normalized] ? normalized : 'overview';
+}
+
 const state = {
   authenticated: false,
   content: null,
-  module: window.location.hash?.slice(1) || 'overview',
+  module: normalizeModule(window.location.hash?.slice(1) || 'overview'),
   dirty: false,
   draft: null,
   draftKind: null,
@@ -254,6 +264,21 @@ function panel(title, description, body, actions = '') {
   `;
 }
 
+function workflowBanner(title, surfaces, note = '保存后会自动构建并发布到公开站点。') {
+  return `
+    <section class="studio-guide">
+      <div>
+        <span class="studio-label">Workflow</span>
+        <h2>${escapeHtml(title)}</h2>
+        <p>${escapeHtml(note)}</p>
+      </div>
+      <div class="studio-surface-list" aria-label="影响公开页面">
+        ${surfaces.map((surface) => `<code>${escapeHtml(surface)}</code>`).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function saveActions(kind, previewHref = '') {
   return `
     <button class="studio-button" type="button" data-action="save-${kind}">保存修改</button>
@@ -263,6 +288,7 @@ function saveActions(kind, previewHref = '') {
         ? `<a class="studio-link-button subtle" href="${previewHref}" target="_blank" rel="noreferrer">打开公开预览</a>`
         : ''
     }
+    <span class="studio-publish-note">保存后自动发布</span>
   `;
 }
 
@@ -286,6 +312,14 @@ function publicHrefForExhibition(slug) {
 
 function getActiveHalls() {
   return state.content.halls.filter((hall) => hall.status === 'active');
+}
+
+function getNavigationDraft() {
+  return state.draft?.navigation ?? state.draft;
+}
+
+function getFeaturedSlug() {
+  return state.content.exhibitions.find((item) => item.featured)?.slug || '';
 }
 
 function getHallName(slug) {
@@ -456,11 +490,11 @@ function render() {
 
   const renderers = {
     overview: renderOverview,
-    'site-copy': renderSiteCopy,
-    navigation: renderNavigation,
+    'home-control': renderHomeControl,
     halls: renderHalls,
     exhibitions: renderExhibitions,
     photos: renderPhotos,
+    'site-text': renderSiteText,
     health: renderHealth,
     docs: renderDocs,
   };
@@ -482,6 +516,12 @@ function renderOverview() {
 
   return `
     <div class="studio-grid">
+      ${workflowBanner('今天从这里判断站点状态，再进入具体工作流。', [
+        '/',
+        '/halls',
+        '/exhibitions/[slug]',
+      ])}
+
       <div class="studio-grid cols-3">
         ${statCard('展厅总数', halls.length, '六大基础展厅当前由本地 JSON 管理。')}
         ${statCard('展览总数', exhibitions.length, '包含 published / draft / hidden。')}
@@ -508,10 +548,11 @@ function renderOverview() {
         '从这里进入最常用的内容管理任务。',
         `
           <div class="studio-toolbar">
-            <button class="studio-button secondary" type="button" data-module-jump="site-copy">编辑首页文案</button>
+            <button class="studio-button secondary" type="button" data-module-jump="home-control">编辑首页与导航</button>
             <button class="studio-button secondary" type="button" data-module-jump="halls">管理六大展厅</button>
             <button class="studio-button secondary" type="button" data-action="new-exhibition">新建展览</button>
             <button class="studio-button secondary" type="button" data-module-jump="photos">管理照片信息</button>
+            <button class="studio-button secondary" type="button" data-module-jump="site-text">编辑站点文案</button>
             <a class="studio-link-button subtle" href="/" target="_blank" rel="noreferrer">查看公开预览</a>
           </div>
         `,
@@ -556,74 +597,122 @@ function statCard(label, value, note) {
   `;
 }
 
-function renderSiteCopy() {
+function renderSiteText() {
   const draft = ensureDraft('site', state.content.site);
-
-  return panel(
-    '全站文案管理',
-    '这些文案存储在 src/data/site.json，公开展馆会在静态构建时读取。',
-    `
-      <form class="studio-form" data-form-kind="site">
-        <div class="studio-form-grid">
-          ${textField('网站英文标题', 'brand.englishTitle', draft.brand.englishTitle)}
-          ${textField('中文副标题', 'brand.chineseSubtitle', draft.brand.chineseSubtitle)}
-          ${textField('首页馆藏标签', 'brand.museumLabel', draft.brand.museumLabel)}
-          ${textField('SEO title', 'seo.title', draft.seo.title)}
-          ${textareaField('SEO description', 'seo.description', draft.seo.description, { full: true, rows: 3 })}
-          ${textareaField('首页主导语', 'home.intro', draft.home.intro, { full: true, rows: 4 })}
-          ${textareaField('首页补充说明', 'home.supplement', draft.home.supplement, {
-            full: true,
-            rows: 4,
-          })}
-          ${textField('首页主按钮文案', 'home.primaryActionLabel', draft.home.primaryActionLabel)}
-          ${textField('首页次按钮文案', 'home.secondaryActionLabel', draft.home.secondaryActionLabel)}
-          ${textField('当前展览区块标题', 'home.currentSectionTitle', draft.home.currentSectionTitle)}
-          ${textField('展厅入口区块标题', 'home.hallsSectionTitle', draft.home.hallsSectionTitle)}
-          ${textareaField(
-            '当前展览说明',
-            'home.currentSectionDescription',
-            draft.home.currentSectionDescription,
-            {
-              full: true,
-              rows: 3,
-            },
-          )}
-          ${textareaField(
-            '展厅入口说明',
-            'home.hallsSectionDescription',
-            draft.home.hallsSectionDescription,
-            {
-              full: true,
-              rows: 3,
-            },
-          )}
-          ${textField('Archive 入口标题', 'home.archiveTitle', draft.home.archiveTitle)}
-          ${textField('Archive 链接文案', 'home.archiveLinkLabel', draft.home.archiveLinkLabel)}
-          ${paragraphField('About 页面正文', 'about.body', draft.about.body, {
-            full: true,
-            help: '段落之间空一行。',
-          })}
-          ${textField('拍摄者标题', 'about.photographerTitle', draft.about.photographerTitle)}
-          ${textField('器材标题', 'about.gearTitle', draft.about.gearTitle)}
-          ${textareaField('拍摄者说明', 'about.photographer', draft.about.photographer, {
-            full: true,
-            rows: 3,
-          })}
-          ${textareaField('器材信息', 'about.gear', draft.about.gear, { full: true, rows: 3 })}
-          ${textareaField('Footer 文案', 'footer.note', draft.footer.note, { full: true, rows: 3 })}
-        </div>
-      </form>
-    `,
-    saveActions('site'),
-  );
-}
-
-function renderNavigation() {
-  const draft = ensureDraft('navigation', state.content.navigation);
-  const halls = state.content.halls;
 
   return `
     <div class="studio-grid">
+      ${workflowBanner('这里管理站点级文字，不负责首页展示顺序。', ['/about', 'SEO', 'Footer'])}
+      ${panel(
+        '站点文案',
+        '品牌、SEO、About 和 Footer 存储在 src/data/site.json。首页大厅相关文字请去 Home Control，避免同一件事藏在两个地方。',
+        `
+          <form class="studio-form" data-form-kind="site">
+            <div class="studio-form-grid">
+              ${textField('网站英文标题', 'brand.englishTitle', draft.brand.englishTitle)}
+              ${textField('中文副标题', 'brand.chineseSubtitle', draft.brand.chineseSubtitle)}
+              ${textField('馆藏标签', 'brand.museumLabel', draft.brand.museumLabel)}
+              ${textField('SEO title', 'seo.title', draft.seo.title)}
+              ${textareaField('SEO description', 'seo.description', draft.seo.description, {
+                full: true,
+                rows: 3,
+              })}
+              ${textField('About SEO title', 'about.seoTitle', draft.about.seoTitle || '')}
+              ${textareaField(
+                'About SEO description',
+                'about.seoDescription',
+                draft.about.seoDescription || '',
+                {
+                  full: true,
+                  rows: 3,
+                },
+              )}
+              ${textField('About 区块标签', 'about.sectionLabel', draft.about.sectionLabel || '')}
+              ${textField('About 页面标题', 'about.sectionTitle', draft.about.sectionTitle || '')}
+              ${paragraphField('About 页面正文', 'about.body', draft.about.body, {
+                full: true,
+                help: '段落之间空一行。',
+              })}
+              ${textField('拍摄者标题', 'about.photographerTitle', draft.about.photographerTitle)}
+              ${textField('器材标题', 'about.gearTitle', draft.about.gearTitle)}
+              ${textareaField('拍摄者说明', 'about.photographer', draft.about.photographer, {
+                full: true,
+                rows: 3,
+              })}
+              ${textareaField('器材信息', 'about.gear', draft.about.gear, { full: true, rows: 3 })}
+              ${textareaField('Footer 文案', 'footer.note', draft.footer.note, { full: true, rows: 3 })}
+              ${textField('Footer 署名', 'footer.copyright', draft.footer.copyright || '')}
+            </div>
+          </form>
+        `,
+        saveActions('site', '/about'),
+      )}
+    </div>
+  `;
+}
+
+function renderHomeControl() {
+  const draft = ensureDraft('home-control', {
+    site: clone(state.content.site),
+    navigation: clone(state.content.navigation),
+    featuredSlug: getFeaturedSlug(),
+  });
+  const halls = state.content.halls;
+  const publishedExhibitions = state.content.exhibitions.filter(
+    (exhibition) => exhibition.status === 'published',
+  );
+
+  return `
+    <div class="studio-grid">
+      ${workflowBanner('这里控制观众进入展馆大厅时先看到什么。', ['/', '/halls', '/archive'])}
+
+      ${panel(
+        '首页大厅文案',
+        '这些文字只影响公开首页，不影响 About 页面。大厅里应保持清楚、克制，避免变成说明书。',
+        `
+          <form class="studio-form" data-form-kind="home-control-site">
+            <div class="studio-form-grid">
+              ${textareaField('首页主导语', 'site.home.intro', draft.site.home.intro, {
+                full: true,
+                rows: 4,
+              })}
+              ${textareaField('首页补充说明', 'site.home.supplement', draft.site.home.supplement, {
+                full: true,
+                rows: 4,
+              })}
+              ${textField('首页主按钮文案', 'site.home.primaryActionLabel', draft.site.home.primaryActionLabel)}
+              ${textField('首页次按钮文案', 'site.home.secondaryActionLabel', draft.site.home.secondaryActionLabel)}
+              ${textField('展厅入口区块标签', 'site.home.hallsSectionLabel', draft.site.home.hallsSectionLabel)}
+              ${textField('展厅入口区块标题', 'site.home.hallsSectionTitle', draft.site.home.hallsSectionTitle)}
+              ${textareaField(
+                '展厅入口说明',
+                'site.home.hallsSectionDescription',
+                draft.site.home.hallsSectionDescription,
+                {
+                  full: true,
+                  rows: 3,
+                },
+              )}
+              ${textField('突出展览区块标签', 'site.home.currentSectionLabel', draft.site.home.currentSectionLabel)}
+              ${textField('突出展览区块标题', 'site.home.currentSectionTitle', draft.site.home.currentSectionTitle)}
+              ${textareaField(
+                '突出展览说明',
+                'site.home.currentSectionDescription',
+                draft.site.home.currentSectionDescription,
+                {
+                  full: true,
+                  rows: 3,
+                },
+              )}
+              ${textField('突出展览卡片标签', 'site.home.featuredLabel', draft.site.home.featuredLabel)}
+              ${textField('Archive 区块标签', 'site.home.archiveLabel', draft.site.home.archiveLabel)}
+              ${textField('Archive 入口标题', 'site.home.archiveTitle', draft.site.home.archiveTitle)}
+              ${textField('Archive 链接文案', 'site.home.archiveLinkLabel', draft.site.home.archiveLinkLabel)}
+            </div>
+          </form>
+        `,
+      )}
+
       ${panel(
         '公开导航',
         '公开导航永远不允许加入 /studio 或 /curator-studio。保存时 API 会再次阻止这些路径。',
@@ -632,7 +721,7 @@ function renderNavigation() {
             <table class="studio-table">
               <thead><tr><th>显示</th><th>Label</th><th>Href</th><th>Order</th></tr></thead>
               <tbody>
-                ${draft.publicNav
+                ${draft.navigation.publicNav
                   .map(
                     (item, index) => `
                       <tr>
@@ -661,24 +750,41 @@ function renderNavigation() {
             </table>
           </div>
         `,
-        saveActions('navigation'),
       )}
 
       ${panel(
         '首页展示',
-        '控制首页是否显示 featured exhibition、展厅入口、Archive 入口，以及哪些展厅出现在首页。',
+        '控制首页是否显示突出展览、展厅入口、Archive 入口，以及哪些展厅出现在首页。',
         `
-          <form class="studio-form" data-form-kind="navigation">
+          <form class="studio-form" data-form-kind="home-control-navigation">
             <div class="studio-form-grid">
-              ${checkboxField('首页显示 featured exhibition', 'home.showFeaturedExhibition', draft.home.showFeaturedExhibition)}
-              ${checkboxField('首页显示展厅入口', 'home.showHalls', draft.home.showHalls)}
-              ${checkboxField('首页显示 Archive 入口', 'home.showArchiveEntry', draft.home.showArchiveEntry)}
-              ${checkboxField('首页展示文字启用', 'home.showIntroText', draft.home.showIntroText)}
+              ${checkboxField('首页显示突出展览', 'navigation.home.showFeaturedExhibition', draft.navigation.home.showFeaturedExhibition)}
+              ${checkboxField('首页显示展厅入口', 'navigation.home.showHalls', draft.navigation.home.showHalls)}
+              ${checkboxField('首页显示 Archive 入口', 'navigation.home.showArchiveEntry', draft.navigation.home.showArchiveEntry)}
+              ${checkboxField('首页展示文字启用', 'navigation.home.showIntroText', draft.navigation.home.showIntroText)}
+              ${selectField(
+                '首页突出显示的展览',
+                'featuredSlug',
+                draft.featuredSlug,
+                [
+                  { value: '', label: '不突出显示任何展览' },
+                  ...publishedExhibitions.map((exhibition) => ({
+                    value: exhibition.slug,
+                    label: `${exhibition.title || exhibition.slug} / ${getHallName(
+                      exhibition.hallSlug,
+                    )}`,
+                  })),
+                ],
+                {
+                  full: true,
+                  help: '突出显示只是大厅里的临时提示。展览仍然属于它原本的展厅。',
+                },
+              )}
             </div>
           </form>
           <div class="studio-table-wrap" style="margin-top: 1rem;">
             <table class="studio-table">
-              <thead><tr><th>首页显示</th><th>展厅</th><th>Slug</th><th>Order</th><th>Status</th></tr></thead>
+              <thead><tr><th>首页显示</th><th>展厅</th><th>Slug</th><th>Order</th><th>Status</th><th>预览</th></tr></thead>
               <tbody>
                 ${halls
                   .map(
@@ -687,7 +793,7 @@ function renderNavigation() {
                         <td>
                           <label class="studio-checkbox">
                             <input data-home-hall="${escapeAttr(hall.slug)}" type="checkbox" ${
-                              draft.home.hallSlugs.includes(hall.slug) ? 'checked' : ''
+                              draft.navigation.home.hallSlugs.includes(hall.slug) ? 'checked' : ''
                             } />
                             <span>show</span>
                           </label>
@@ -696,6 +802,11 @@ function renderNavigation() {
                         <td>${escapeHtml(hall.slug)}</td>
                         <td>${escapeHtml(hall.order)}</td>
                         <td>${statusPill(hall.status)}</td>
+                        <td>
+                          <a class="studio-link-button subtle" href="${publicHrefForHall(
+                            hall.slug,
+                          )}" target="_blank" rel="noreferrer">打开</a>
+                        </td>
                       </tr>
                     `,
                   )
@@ -704,6 +815,7 @@ function renderNavigation() {
             </table>
           </div>
         `,
+        saveActions('home', '/'),
       )}
     </div>
   `;
@@ -721,6 +833,8 @@ function renderHalls() {
 
   return `
     <div class="studio-grid">
+      ${workflowBanner('这里维护六大展厅的骨架和首页入口。', ['/halls', '/halls/[slug]', '/'])}
+
       ${panel(
         '展厅列表',
         '六大基础展厅可以 hidden，但不要直接删除。修改 slug 前会提示旧链接和展览引用风险。',
@@ -820,6 +934,12 @@ function renderExhibitions() {
 
   return `
     <div class="studio-grid">
+      ${workflowBanner('这里决定哪些展览被公开、隐藏、草稿保存或突出显示。', [
+        '/exhibitions/[slug]',
+        '/',
+        '/archive',
+      ])}
+
       ${panel(
         '展览列表',
         '支持按展厅、状态、featured、日期排序和搜索标题 / 地点 / intro。',
@@ -1000,7 +1120,7 @@ function renderExhibitionEditor(draft) {
 
   return panel(
     `编辑展览：${draft.title || '未命名展览'}`,
-    '展览数据存储在 src/content/exhibitions/*.json。published 展览必须有标题、展厅、intro、cover 和至少一张照片。',
+    '展览数据存储在 src/content/exhibitions/*.json。published 会进入公开展馆；draft / hidden 不公开。featured 是首页大厅里的“突出显示”。',
     `
       <form class="studio-form" data-form-kind="exhibition">
         <div class="studio-form-grid">
@@ -1009,17 +1129,17 @@ function renderExhibitionEditor(draft) {
           ${textField('slug', 'slug', draft.slug, {
             help: '修改 slug 可能影响旧链接。',
           })}
-          ${selectField('hallSlug', 'hallSlug', draft.hallSlug, hallChoices)}
+          ${selectField('所属展厅 hallSlug', 'hallSlug', draft.hallSlug, hallChoices)}
           ${textField('date', 'date', asDate(draft.date), { type: 'date' })}
           ${textField('dateLabel', 'dateLabel', draft.dateLabel || '')}
           ${textField('location', 'location', draft.location || '')}
           ${numberField('displayOrder', 'displayOrder', draft.displayOrder ?? '')}
-          ${selectField('status', 'status', draft.status, [
+          ${selectField('公开状态 status', 'status', draft.status, [
             { value: 'draft', label: 'draft' },
             { value: 'published', label: 'published' },
             { value: 'hidden', label: 'hidden' },
           ])}
-          ${checkboxField('featured', 'featured', draft.featured)}
+          ${checkboxField('突出显示在首页大厅 / featured', 'featured', draft.featured)}
           ${textField('cover', 'cover', draft.cover || '', { full: true })}
           ${textareaField('intro', 'intro', draft.intro || '', { full: true, rows: 5 })}
           ${textField('SEO title', 'seo.title', draft.seo?.title || '', { full: true })}
@@ -1035,7 +1155,8 @@ function renderExhibitionEditor(draft) {
         </div>
       </form>
     `,
-    saveActions('exhibition', preview),
+    `${saveActions('exhibition', preview)}
+      <button class="studio-button secondary" type="button" data-action="edit-current-photos">管理照片与封面</button>`,
   );
 }
 
@@ -1072,6 +1193,12 @@ function renderPhotos() {
 
   return `
     <div class="studio-grid">
+      ${workflowBanner('这里只管理已有图片的 metadata，不做真实上传。', [
+        '/exhibitions/[slug]',
+        'cover',
+        'photo captions',
+      ])}
+
       ${panel(
         '选择展览',
         'Phase 2 不做真实上传，只管理已有图片路径和 metadata。',
@@ -1187,6 +1314,12 @@ function renderHealth() {
 
   return `
     <div class="studio-grid">
+      ${workflowBanner('保存会自动备份、构建并发布；这里负责发现发布前后的内容风险。', [
+        'health',
+        'build',
+        'current release',
+      ])}
+
       <div class="studio-grid cols-3">
         ${statCard('Error', health.counts.error, '必须修复')}
         ${statCard('Warning', health.counts.warning, '建议修复')}
@@ -1238,25 +1371,34 @@ function renderDocs() {
     },
   ];
 
-  return panel(
-    '项目文档入口',
-    '这些文档不通过公开站点发布给访客；它们是本地维护和部署时的项目说明。',
-    `
-      <div class="studio-docs">
-        ${docs
-          .map(
-            (doc) => `
-              <article class="studio-doc-card">
-                <h3>${escapeHtml(doc.title)}</h3>
-                <p>${escapeHtml(doc.note)}</p>
-                <code class="studio-code">${escapeHtml(doc.path)}</code>
-              </article>
-            `,
-          )
-          .join('')}
-      </div>
-    `,
-  );
+  return `
+    <div class="studio-grid">
+      ${workflowBanner('这里是维护说明，不影响公开页面。', [
+        'README.md',
+        'PROJECT_BRIEF.md',
+        'DEPLOYMENT.md',
+      ])}
+      ${panel(
+        '项目文档入口',
+        '这些文档不通过公开站点发布给访客；它们是本地维护和部署时的项目说明。',
+        `
+          <div class="studio-docs">
+            ${docs
+              .map(
+                (doc) => `
+                  <article class="studio-doc-card">
+                    <h3>${escapeHtml(doc.title)}</h3>
+                    <p>${escapeHtml(doc.note)}</p>
+                    <code class="studio-code">${escapeHtml(doc.path)}</code>
+                  </article>
+                `,
+              )
+              .join('')}
+          </div>
+        `,
+      )}
+    </div>
+  `;
 }
 
 function bindRenderedControls() {
@@ -1351,7 +1493,8 @@ function handleBoundInput(event) {
 
 function handleNavigationInput(event) {
   const input = event.currentTarget;
-  const item = state.draft.publicNav[Number(input.dataset.navIndex)];
+  const navigationDraft = getNavigationDraft();
+  const item = navigationDraft.publicNav[Number(input.dataset.navIndex)];
   const field = input.dataset.navField;
 
   if (field === 'enabled') {
@@ -1375,7 +1518,8 @@ function handleNavigationInput(event) {
 function handleHomeHallToggle(event) {
   const input = event.currentTarget;
   const slug = input.dataset.homeHall;
-  const current = new Set(state.draft.home.hallSlugs);
+  const navigationDraft = getNavigationDraft();
+  const current = new Set(navigationDraft.home.hallSlugs);
 
   if (input.checked) {
     current.add(slug);
@@ -1383,7 +1527,7 @@ function handleHomeHallToggle(event) {
     current.delete(slug);
   }
 
-  state.draft.home.hallSlugs = state.content.halls
+  navigationDraft.home.hallSlugs = state.content.halls
     .map((hall) => hall.slug)
     .filter((hallSlug) => current.has(hallSlug));
   markDirty();
@@ -1477,6 +1621,17 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
+  if (action === 'edit-current-photos') {
+    if (state.dirty) {
+      window.alert('请先保存或重置当前展览修改，再进入照片与封面。');
+      return;
+    }
+
+    state.selectedPhotoExhibition = state.selectedExhibition;
+    changeModule('photos');
+    return;
+  }
+
   if (action === 'add-photo') {
     state.draft.photos = state.draft.photos || [];
     state.draft.photos.push({
@@ -1539,7 +1694,9 @@ document.addEventListener('click', (event) => {
 });
 
 function changeModule(module) {
-  if (!modules[module] || module === state.module) {
+  const nextModule = normalizeModule(module);
+
+  if (nextModule === state.module) {
     return;
   }
 
@@ -1547,7 +1704,7 @@ function changeModule(module) {
     return;
   }
 
-  state.module = module;
+  state.module = nextModule;
   state.draft = null;
   state.draftKind = null;
   state.editingNewExhibition = false;
@@ -1561,6 +1718,12 @@ async function saveCurrent(kind) {
     if (kind === 'site') {
       const result = await post('/site', state.draft);
       await reloadAfterSave('site', result);
+      return;
+    }
+
+    if (kind === 'home') {
+      const result = await post('/home', state.draft);
+      await reloadAfterSave('home control', result);
       return;
     }
 

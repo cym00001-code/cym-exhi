@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
 import SectionTitle from '../components/SectionTitle.astro';
 import HallCard from '../components/HallCard.astro';
-import ExhibitionCard from '../components/ExhibitionCard.astro';
+import FeaturedExhibition from '../components/FeaturedExhibition.astro';
 import MotionReveal from '../components/MotionReveal.astro';
 import navigation from '../data/navigation.json';
 import siteCopy from '../data/site.json';
@@ -13,7 +13,7 @@ const halls = await getHomeHalls();
 const exhibitions = await getPublicExhibitions();
 const hallMap = await getHallMap();
 const featured = navigation.home.showFeaturedExhibition
-  ? (exhibitions.find((exhibition) => exhibition.data.featured) ?? exhibitions[0])
+  ? exhibitions.find((exhibition) => exhibition.data.featured)
   : undefined;
 
 const exhibitionsByHall = new Map(
@@ -27,19 +27,7 @@ const featuredHall = featured ? hallMap.get(featured.data.hallSlug) : undefined;
 ---
 
 <Layout>
-  <Hero
-    featured={featured
-      ? {
-          title: featured.data.title,
-          subtitle: featured.data.subtitle,
-          href: `/exhibitions/${featured.data.slug}`,
-          hallName: featuredHall?.data.name ?? featured.data.hallSlug,
-          location: featured.data.location,
-          image: resolveImage(featured.data.cover),
-          alt: featured.data.photos[0]?.alt ?? featured.data.title,
-        }
-      : undefined}
-  />
+  <Hero />
 
   {
     navigation.home.showHalls && (
@@ -73,7 +61,7 @@ const featuredHall = featured ? hallMap.get(featured.data.hallSlug) : undefined;
           />
         </MotionReveal>
         <MotionReveal>
-          <ExhibitionCard
+          <FeaturedExhibition
             exhibition={featured}
             hall={featuredHall}
             image={resolveImage(featured.data.cover)}
@@ -101,6 +89,10 @@ const featuredHall = featured ? hallMap.get(featured.data.hallSlug) : undefined;
 <style>
   .hall-list {
     display: grid;
+  }
+
+  .surface-line {
+    padding-top: var(--space-6);
   }
 
   .archive-entry {
@@ -132,10 +124,20 @@ const featuredHall = featured ? hallMap.get(featured.data.hallSlug) : undefined;
   }
 
   @media (max-width: 680px) {
+    .page-section {
+      padding-block: var(--space-6);
+    }
+
+    .surface-line {
+      padding-top: var(--space-4);
+    }
+
     .archive-entry {
       align-items: flex-start;
       flex-direction: column;
       width: min(calc(100% - 1.25rem), var(--width-page));
+      gap: var(--space-4);
+      padding: var(--space-4) 0;
     }
   }
 </style>

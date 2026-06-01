@@ -549,7 +549,7 @@ async function buildHealth({ site, navigation, halls, exhibitions }) {
 
   if (featured.length === 0) {
     results.push(
-      issue('info', 'featured-none', '当前没有 featured 展览', '首页会回退到最新展览。'),
+      issue('info', 'featured-none', '当前没有 featured 展览', '首页不会显示突出展览区块。'),
     );
   }
   if (featured.length > 3) {
@@ -676,6 +676,53 @@ async function saveNavigation(payload) {
   const stamp = timestamp();
   await writeJson(paths.navigation, payload, stamp);
   return { saved: true, backupGroup: stamp, publish: await publishStaticSite() };
+}
+
+async function saveHomeControl(payload) {
+  const site = payload?.site;
+  const navigation = payload?.navigation;
+  const featuredSlug = String(payload?.featuredSlug ?? '');
+  const content = await loadContent();
+  const errors = [...validateSite(site), ...validateNavigation(navigation)];
+
+  if (featuredSlug) {
+    const selected = content.exhibitions.find((exhibition) => exhibition.slug === featuredSlug);
+    if (!selected) {
+      errors.push(`Featured exhibition does not exist: ${featuredSlug}`);
+    } else if (selected.status !== 'published') {
+      errors.push('Featured exhibition must be published.');
+    }
+  }
+
+  if (errors.length) throw httpError(400, errors.join('\n'));
+
+  const stamp = timestamp();
+  await writeJson(paths.site, site, stamp);
+  await writeJson(paths.navigation, navigation, stamp);
+
+  const changedExhibitions = [];
+  for (const exhibition of content.exhibitions) {
+    const shouldFeature = featuredSlug ? exhibition.slug === featuredSlug : false;
+    if (Boolean(exhibition.featured) === shouldFeature) continue;
+
+    await writeJson(
+      `${paths.exhibitionsDir}/${exhibition.slug}.json`,
+      {
+        ...exhibition,
+        featured: shouldFeature,
+      },
+      stamp,
+    );
+    changedExhibitions.push(exhibition.slug);
+  }
+
+  return {
+    saved: true,
+    backupGroup: stamp,
+    featuredSlug,
+    changedExhibitions,
+    publish: await publishStaticSite(),
+  };
 }
 
 async function saveHall(oldSlug, payload) {
@@ -807,6 +854,11 @@ async function route(req, res) {
 
   if (req.method === 'POST' && rest[0] === 'navigation') {
     jsonResponse(req, res, 200, await saveNavigation(await readBody(req)));
+    return;
+  }
+
+  if (req.method === 'POST' && rest[0] === 'home') {
+    jsonResponse(req, res, 200, await saveHomeControl(await readBody(req)));
     return;
   }
 

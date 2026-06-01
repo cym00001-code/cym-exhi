@@ -44,4 +44,15 @@ const { label, title, description } = Astro.props;
     margin-top: var(--space-3);
     color: var(--color-muted);
   }
+
+  @media (max-width: 640px) {
+    .section-title {
+      margin-bottom: var(--space-4);
+    }
+
+    .section-copy {
+      margin-top: var(--space-2);
+      line-height: 1.8;
+    }
+  }
 </style>

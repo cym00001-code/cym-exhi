@@ -8,6 +8,7 @@ interface Props {
 
 const { hall, exhibitions = [] } = Astro.props;
 const count = exhibitions.length;
+const countLabel = count > 0 ? `${count} 个展览` : '布展中';
 ---
 
 <a class:list={['hall-card', `tone-${hall.data.tone}`]} href={`/halls/${hall.data.slug}`}>
@@ -20,7 +21,7 @@ const count = exhibitions.length;
     </div>
   </div>
   <div class="hall-side">
-    <span>{count > 0 ? `${count} exhibition${count > 1 ? 's' : ''}` : '布置中'}</span>
+    <span>{countLabel}</span>
   </div>
 </a>
 
@@ -113,11 +114,19 @@ const count = exhibitions.length;
     .hall-card {
       grid-template-columns: 2.5rem minmax(0, 1fr);
       gap: var(--space-3);
+      padding: 1.25rem 0;
     }
 
     .hall-side {
       grid-column: 2;
       justify-self: start;
+    }
+
+    .mood {
+      gap: 0.35rem 0.7rem;
+      margin-top: var(--space-2);
+      font-size: 0.84rem;
+      line-height: 1.55;
     }
   }
 </style>

@@ -77,16 +77,24 @@ pnpm format:check
 
 ## 可编辑内容
 
-Curator Studio 可管理：
+Curator Studio 按日常工作流组织，可管理：
 
-- 全站文案：`src/data/site.json`
+- `Home Control / 首页与导航`：首页大厅文案、公开导航、首页展厅入口、Archive 开关、突出显示的展览
+- `Halls / 展厅管理`：六大展厅名称、说明、状态、排序、首页展示与预留视觉字段
+- `Exhibitions / 展览管理`：展览标题、所属展厅、状态、featured、SEO、章节预留和公开预览
+- `Photos / 照片与封面`：展览照片的 `src`、`alt`、caption、排序、封面和方向
+- `Site Text / 站点文案`：品牌、SEO、About、Footer
+- `Health & Publish / 健康与发布`：内容健康检查、构建发布风险提示
+
+底层内容仍然保存在：
+
+- 站点文案：`src/data/site.json`
 - 公开导航与首页展示：`src/data/navigation.json`
 - 六大展厅：`src/content/halls/*.json`
 - 展览 metadata：`src/content/exhibitions/*.json`
 - 照片 metadata：展览 JSON 中的 `photos`
-- 内容健康检查
 
-保存时 API 会先写入 `.studio-backups/` 轻量备份，再写回内容文件。云端开启发布模式后，保存会触发 `pnpm build` 并更新静态 `current` 发布目录。
+保存时 API 会先写入 `.studio-backups/` 轻量备份，再写回内容文件。云端开启发布模式后，保存会触发 `pnpm build` 并更新静态 `current` 发布目录。`Home Control` 使用 `/api/curator-studio/home` 一次保存首页文案、导航、首页展厅和 featured 展览，避免把首页控制拆成多套入口。
 
 ## 添加展览
 

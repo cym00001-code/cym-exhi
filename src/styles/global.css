@@ -207,4 +207,17 @@ select {
   .page-section {
     width: min(calc(100% - 1.25rem), var(--width-page));
   }
+
+  .quiet-link {
+    gap: 0.45rem;
+    font-size: 0.72rem;
+  }
+
+  .quiet-link::after {
+    width: 1.35rem;
+  }
+
+  .quiet-link:hover::after {
+    width: 2rem;
+  }
 }

@@ -12,14 +12,14 @@ YIMING PHOTO ARCHIVE / 一鸣私人摄影馆是一个私人摄影网页展览馆
 
 Phase 2 Final 的重点是 Curator Studio：建立一个云端存在、需要鉴权、能真正写入内容并发布到线上展馆的私人策展控制台。
 
-它需要让我管理：
+它需要让我按实际工作流管理：
 
-- 全站文案
-- 导航与首页展示
-- 六大展厅
-- 展览 metadata
-- 照片 metadata
-- 内容健康检查
+- `Home Control`：首页文案、公开导航、首页展厅入口、Archive 开关和突出显示的展览
+- `Halls`：六大展厅的内容、状态、排序和首页展示
+- `Exhibitions`：展览 metadata、发布状态、featured、SEO 和公开预览
+- `Photos`：照片 metadata、排序、封面和所属展览
+- `Site Text`：品牌、SEO、About、Footer
+- `Health & Publish`：内容健康检查和保存发布风险提示
 - 基础展示逻辑
 
 当前仍不接入 Supabase、不接入数据库、不做商业 CMS、不做真实公网图片上传系统。
@@ -143,6 +143,7 @@ Curator Studio 面向站点所有者：
 - 不进入公开导航
 - 写入内容文件前创建 `.studio-backups/`
 - 保存后触发构建并发布静态展馆
+- 首页控制集中在 `Home Control`，避免首页文案、导航、展厅入口和 featured 展览分散到多个入口
 - 不共享公开展览展示组件的布局逻辑
 - 不使用 Supabase、数据库或线上 CMS
 

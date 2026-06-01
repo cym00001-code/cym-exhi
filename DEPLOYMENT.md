@@ -52,6 +52,7 @@ PM2 API 负责：
 - 读取 `src/data` 与 `src/content`。
 - 保存前备份到 `.studio-backups/`。
 - 写回 JSON 内容文件。
+- `/api/curator-studio/home` 会一次保存首页文案、导航、首页展厅入口和 featured 展览。
 - 保存后运行 `pnpm build`。
 - 将 `dist/` 复制到新 release。
 - 更新 `current` 软链。
@@ -151,6 +152,7 @@ curl -i http://127.0.0.1:8080/api/curator-studio/content
 - `/curator-studio` 返回 200。
 - 未登录访问 `/api/curator-studio/content` 返回 401。
 - 登录后 Studio 可读取内容、保存、备份并发布。
+- `Home Control` 保存后，公开首页、导航、首页展厅入口和突出显示展览同步更新。
 
 ## 回滚方式
 
