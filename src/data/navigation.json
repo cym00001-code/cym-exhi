@@ -24,6 +24,6 @@
     "showHalls": true,
     "showArchiveEntry": true,
     "showIntroText": true,
-    "hallSlugs": ["city", "travel", "campus", "still-life", "daily-notes", "experiments"]
+    "hallSlugs": ["city", "travel", "still-life", "daily-notes", "experiments"]
   }
 }
