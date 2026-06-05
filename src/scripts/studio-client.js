@@ -68,6 +68,7 @@ const state = {
   selectedPhotoExhibition: null,
   editingNewHall: false,
   editingNewExhibition: false,
+  pendingHallDelete: null,
   filters: {
     hall: 'all',
     status: 'all',
@@ -342,6 +343,39 @@ function isFoundationalHall(slug) {
 
 function getHallExhibitionCount(slug) {
   return state.content.exhibitions.filter((exhibition) => exhibition.hallSlug === slug).length;
+}
+
+function getHallDeletionState(hall) {
+  const referenceCount = getHallExhibitionCount(hall.slug);
+  const foundational = isFoundationalHall(hall.slug);
+
+  if (referenceCount > 0) {
+    return {
+      canDelete: false,
+      buttonLabel: '不能删除',
+      note: `仍有 ${referenceCount} 个展览引用。请先把这些展览移动到其他展厅，或改为 hidden。`,
+      referenceCount,
+      foundational,
+    };
+  }
+
+  if (foundational) {
+    return {
+      canDelete: true,
+      buttonLabel: '删除需确认',
+      note: '这是基础展厅。更推荐改为 hidden；确实删除时需要输入 slug 二次确认。',
+      referenceCount,
+      foundational,
+    };
+  }
+
+  return {
+    canDelete: true,
+    buttonLabel: '删除',
+    note: '无展览引用，可以删除。删除前会自动备份，保存后自动发布。',
+    referenceCount,
+    foundational,
+  };
 }
 
 function getHallName(slug) {
@@ -857,6 +891,7 @@ function renderHalls() {
       : selected
         ? ensureDraft(`hall:${selected.slug}`, selected)
         : null;
+  const deletePanel = renderHallDeleteConfirm();
 
   return `
     <div class="studio-grid">
@@ -875,8 +910,9 @@ function renderHalls() {
               <thead><tr><th>名称</th><th>English</th><th>Slug</th><th>Status</th><th>Order</th><th>首页</th><th>展览</th><th>操作</th></tr></thead>
               <tbody>
                 ${halls
-                  .map(
-                    (hall) => `
+                  .map((hall) => {
+                    const deletion = getHallDeletionState(hall);
+                    return `
                       <tr>
                         <td>${escapeHtml(hall.name)}</td>
                         <td>${escapeHtml(hall.englishName)}</td>
@@ -895,18 +931,23 @@ function renderHalls() {
                             )}" target="_blank" rel="noreferrer">预览</a>
                             <button class="studio-button danger" type="button" data-action="delete-hall" data-delete-hall="${escapeAttr(
                               hall.slug,
-                            )}">删除</button>
+                            )}" ${deletion.canDelete ? '' : 'disabled'}>${escapeHtml(deletion.buttonLabel)}</button>
+                            <span class="studio-action-note ${deletion.canDelete ? '' : 'warn'}">${escapeHtml(
+                              deletion.note,
+                            )}</span>
                           </div>
                         </td>
                       </tr>
-                    `,
-                  )
+                    `;
+                  })
                   .join('')}
               </tbody>
             </table>
           </div>
         `,
       )}
+
+      ${deletePanel}
 
       ${
         draft
@@ -960,6 +1001,51 @@ function renderHalls() {
       }
     </div>
   `;
+}
+
+function renderHallDeleteConfirm() {
+  const slug = state.pendingHallDelete;
+  if (!slug) {
+    return '';
+  }
+
+  const hall = state.content.halls.find((item) => item.slug === slug);
+  if (!hall) {
+    state.pendingHallDelete = null;
+    return '';
+  }
+
+  const deletion = getHallDeletionState(hall);
+  const description = deletion.canDelete
+    ? '删除会先写入备份，然后自动构建并发布公开站点。这个操作不会删除任何照片文件。'
+    : deletion.note;
+
+  return panel(
+    `确认删除展厅：${hall.name}`,
+    description,
+    `
+      <div class="studio-delete-confirm">
+        <p>
+          ${escapeHtml(deletion.note)}
+        </p>
+        <label class="studio-field full" for="hall-delete-confirmation">
+          <span>输入 slug 以确认删除</span>
+          <input id="hall-delete-confirmation" data-hall-delete-confirmation type="text" placeholder="${escapeAttr(
+            hall.slug,
+          )}" />
+        </label>
+        <div class="studio-row-actions">
+          <button class="studio-button danger" type="button" data-action="confirm-delete-hall" data-delete-hall="${escapeAttr(
+            hall.slug,
+          )}" ${deletion.canDelete ? '' : 'disabled'}>确认删除并发布</button>
+          <button class="studio-button secondary" type="button" data-action="cancel-delete-hall">取消</button>
+          <a class="studio-link-button subtle" href="${publicHrefForHall(
+            hall.slug,
+          )}" target="_blank" rel="noreferrer">打开公开预览</a>
+        </div>
+      </div>
+    `,
+  );
 }
 
 function renderExhibitions() {
@@ -1460,6 +1546,7 @@ function bindRenderedControls() {
       }
       state.selectedHall = button.dataset.selectHall;
       state.editingNewHall = false;
+      state.pendingHallDelete = null;
       state.draft = null;
       render();
     });
@@ -1614,6 +1701,7 @@ document.addEventListener('click', async (event) => {
     state.draft = null;
     state.draftKind = null;
     state.editingNewHall = false;
+    state.pendingHallDelete = null;
     markClean('Reset');
     render();
     return;
@@ -1625,6 +1713,7 @@ document.addEventListener('click', async (event) => {
     }
     state.draft = null;
     state.editingNewHall = false;
+    state.pendingHallDelete = null;
     await loadContent();
     return;
   }
@@ -1642,6 +1731,7 @@ document.addEventListener('click', async (event) => {
     state.content = null;
     state.draft = null;
     state.editingNewHall = false;
+    state.pendingHallDelete = null;
     renderLogin('已退出登录。');
     return;
   }
@@ -1652,6 +1742,7 @@ document.addEventListener('click', async (event) => {
     }
     state.module = 'halls';
     state.editingNewHall = true;
+    state.pendingHallDelete = null;
     const hall = createNewHall();
     state.selectedHall = hall.slug;
     state.draftKind = 'hall:_new';
@@ -1663,6 +1754,18 @@ document.addEventListener('click', async (event) => {
   }
 
   if (action === 'delete-hall') {
+    prepareHallDeletion(event.target.closest('[data-delete-hall]')?.dataset.deleteHall);
+    return;
+  }
+
+  if (action === 'cancel-delete-hall') {
+    state.pendingHallDelete = null;
+    setStatus('Delete cancelled', '');
+    render();
+    return;
+  }
+
+  if (action === 'confirm-delete-hall') {
     await deleteHall(event.target.closest('[data-delete-hall]')?.dataset.deleteHall);
     return;
   }
@@ -1772,6 +1875,7 @@ function changeModule(module) {
   state.draftKind = null;
   state.editingNewHall = false;
   state.editingNewExhibition = false;
+  state.pendingHallDelete = null;
   render();
 }
 
@@ -1809,6 +1913,7 @@ async function saveCurrent(kind) {
       const result = await post(`/halls/${oldSlug}`, state.draft);
       state.selectedHall = result.slug;
       state.editingNewHall = false;
+      state.pendingHallDelete = null;
       await reloadAfterSave('hall', result);
       return;
     }
@@ -1839,6 +1944,7 @@ async function saveCurrent(kind) {
 async function reloadAfterSave(kind, result) {
   state.draft = null;
   state.draftKind = null;
+  state.pendingHallDelete = null;
   await loadContent();
   markClean(`${kind} saved${publishSummary(result?.publish)}`);
 }
@@ -1882,7 +1988,7 @@ async function post(path, body) {
   return payload;
 }
 
-async function deleteHall(slug) {
+function prepareHallDeletion(slug) {
   if (!slug) {
     return;
   }
@@ -1897,42 +2003,54 @@ async function deleteHall(slug) {
     return;
   }
 
-  const count = getHallExhibitionCount(slug);
-  if (count > 0) {
-    window.alert(
-      `不能删除「${hall.name}」。当前有 ${count} 个展览仍然引用这个展厅，请先移动或隐藏相关展览。`,
-    );
+  const deletion = getHallDeletionState(hall);
+  if (!deletion.canDelete) {
+    state.pendingHallDelete = slug;
+    setStatus('Delete blocked', 'error');
+    render();
     return;
   }
 
-  let confirmation = slug;
-  let confirmFoundation = false;
+  state.pendingHallDelete = slug;
+  setStatus('Confirm hall deletion', 'dirty');
+  render();
+}
 
-  if (isFoundationalHall(slug)) {
-    confirmation = window.prompt(
-      `「${hall.name}」是基础展厅。更推荐改为 hidden。若确实要删除，请输入 slug：${slug}`,
-      '',
-    );
-    if (confirmation !== slug) {
-      setStatus('Delete cancelled', '');
-      return;
-    }
-    confirmFoundation = true;
-  } else {
-    const ok = window.confirm(
-      `确定删除展厅「${hall.name}」吗？删除前会自动备份，保存后会自动发布。`,
-    );
-    if (!ok) {
-      setStatus('Delete cancelled', '');
-      return;
-    }
+async function deleteHall(slug) {
+  if (!slug) {
+    return;
+  }
+
+  const hall = state.content.halls.find((item) => item.slug === slug);
+  if (!hall) {
+    window.alert(`找不到展厅：${slug}`);
+    return;
+  }
+
+  const deletion = getHallDeletionState(hall);
+  if (!deletion.canDelete) {
+    state.pendingHallDelete = slug;
+    setStatus('Delete blocked', 'error');
+    render();
+    return;
+  }
+
+  const confirmation = root.querySelector('[data-hall-delete-confirmation]')?.value?.trim() || '';
+  if (confirmation !== slug) {
+    setStatus('Slug confirmation required', 'error');
+    window.alert(`请输入完整 slug 以确认删除：${slug}`);
+    return;
   }
 
   try {
     setStatus('Deleting hall', 'dirty');
-    const result = await post(`/halls/${slug}/delete`, { confirmation, confirmFoundation });
+    const result = await post(`/halls/${slug}/delete`, {
+      confirmation,
+      confirmFoundation: deletion.foundational,
+    });
     state.selectedHall = state.content.halls.find((item) => item.slug !== slug)?.slug || null;
     state.editingNewHall = false;
+    state.pendingHallDelete = null;
     await reloadAfterSave('hall deleted', result);
   } catch (error) {
     setStatus('Delete failed', 'error');

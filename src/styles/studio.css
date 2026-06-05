@@ -376,9 +376,23 @@ button {
   color: var(--studio-red);
 }
 
+.studio-button:disabled,
+.studio-link-button:disabled {
+  cursor: not-allowed;
+  border-color: var(--studio-line);
+  background: var(--studio-panel-muted);
+  color: var(--studio-muted-2);
+  opacity: 0.78;
+}
+
 .studio-button:hover,
 .studio-link-button:hover {
   border-color: var(--studio-ink);
+}
+
+.studio-button:disabled:hover,
+.studio-link-button:disabled:hover {
+  border-color: var(--studio-line);
 }
 
 .studio-status {
@@ -459,6 +473,32 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
+}
+
+.studio-action-note {
+  flex-basis: 100%;
+  color: var(--studio-muted);
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+.studio-action-note.warn {
+  color: var(--studio-yellow);
+}
+
+.studio-delete-confirm {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(154, 83, 74, 0.22);
+  border-radius: var(--studio-radius);
+  background: rgba(154, 83, 74, 0.06);
+}
+
+.studio-delete-confirm p {
+  margin: 0;
+  color: var(--studio-muted);
+  line-height: 1.7;
 }
 
 .studio-pill {
